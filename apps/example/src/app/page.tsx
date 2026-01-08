@@ -42,6 +42,40 @@ const ELEMENT_NAMES: Record<string, string> = {
   water: "수(水)",
 };
 
+const STEM_KOREAN: Record<string, string> = {
+  甲: "갑",
+  乙: "을",
+  丙: "병",
+  丁: "정",
+  戊: "무",
+  己: "기",
+  庚: "경",
+  辛: "신",
+  壬: "임",
+  癸: "계",
+};
+
+const BRANCH_KOREAN: Record<string, string> = {
+  子: "자",
+  丑: "축",
+  寅: "인",
+  卯: "묘",
+  辰: "진",
+  巳: "사",
+  午: "오",
+  未: "미",
+  申: "신",
+  酉: "유",
+  戌: "술",
+  亥: "해",
+};
+
+function getPillarKorean(pillar: string): string {
+  const stem = pillar[0];
+  const branch = pillar[1];
+  return `${STEM_KOREAN[stem] || stem}${BRANCH_KOREAN[branch] || branch}`;
+}
+
 interface FormData {
   year: string;
   month: string;
@@ -281,6 +315,7 @@ function SajuResultDisplay({ result }: { result: SajuResult }) {
               <div key={pillar.label} className="bg-secondary rounded-lg p-4 space-y-2">
                 <p className="text-sm text-muted-foreground">{pillar.label}</p>
                 <p className="text-3xl font-bold">{pillar.value}</p>
+                <p className="text-sm text-primary">{getPillarKorean(pillar.value)}</p>
               </div>
             ))}
           </div>
