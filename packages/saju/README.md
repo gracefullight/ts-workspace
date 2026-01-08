@@ -15,7 +15,12 @@
 - **태양시 보정** - 경도 기반 평균 태양시 조정 옵션
 - **트리쉐이킹 지원** - 필요한 것만 import
 - **완전한 타입 지원** - TypeScript 정의 완비
-- **풍부한 테스트** - 85개 이상 테스트, 91% 이상 커버리지
+- **풍부한 테스트** - 158개 이상 테스트, 91% 이상 커버리지
+- **십신 분석** - 장간(藏干)을 포함한 상세 십신 및 오행 분포 분석
+- **신강/신약 판정** - 득령, 득지, 득세를 고려한 9단계 신강도 분석
+- **합충형파해** - 천간합, 육합, 삼합, 방합 및 충, 해, 형, 파 분석
+- **대운/세운 계산** - 성별 및 연간 음양을 고려한 대운 및 연도별 세운 계산
+- **용신 추출** - 억부, 조후 등을 고려한 용신 추천 및 개운법 가이드
 
 ## 사주(四柱)란?
 
@@ -59,6 +64,37 @@ pnpm add date-fns date-fns-tz
 ```typescript
 import { DateTime } from "luxon";
 import { createLuxonAdapter } from "@gracefullight/saju/adapters/luxon";
+import { getSaju, STANDARD_PRESET } from "@gracefullight/saju";
+
+const adapter = await createLuxonAdapter();
+
+const birthDateTime = DateTime.fromObject(
+  { year: 2000, month: 1, day: 1, hour: 18, minute: 0 },
+  { zone: "Asia/Seoul" }
+);
+
+// getSaju: 사주 팔자, 십신, 신강약, 합충, 용신, 대운을 한 번에 계산
+const result = getSaju(adapter, birthDateTime, {
+  longitudeDeg: 126.9778,
+  preset: STANDARD_PRESET,
+  gender: "male",
+  includeMajorLuck: true,
+  yearlyLuckRange: { from: 2024, to: 2025 },
+});
+
+console.log(result.pillars);   // { year: "己卯", month: "丙子", ... }
+console.log(result.tenGods);   // 십신 및 장간 분석
+console.log(result.strength);  // 신강/신약 판정 (예: "신약")
+console.log(result.relations); // 합충형파해 분석
+console.log(result.yongShen);  // 용신 및 개운법
+console.log(result.majorLuck); // 대운 정보
+```
+
+### 사주 팔자만 계산하기
+
+```typescript
+import { DateTime } from "luxon";
+import { createLuxonAdapter } from "@gracefullight/saju/adapters/luxon";
 import { getFourPillars, STANDARD_PRESET } from "@gracefullight/saju";
 
 const adapter = await createLuxonAdapter();
@@ -74,24 +110,6 @@ const result = getFourPillars(adapter, birthDateTime, {
 });
 
 console.log(result);
-// {
-//   year: "己卯",    // 연주 (천간 + 지지)
-//   month: "丙子",   // 월주
-//   day: "辛巳",     // 일주
-//   hour: "戊戌",    // 시주
-//   lunar: {
-//     lunarYear: 1999,
-//     lunarMonth: 11,
-//     lunarDay: 25,
-//     isLeapMonth: false
-//   },
-//   meta: {
-//     solarYearUsed: 1999,
-//     sunLonDeg: 280.9,
-//     effectiveDayDate: { year: 2000, month: 1, day: 1 },
-//     adjustedDtForHour: "2000-01-01T18:00:00.000+09:00"
-//   }
-// }
 ```
 
 ## 사용법
@@ -211,6 +229,25 @@ const myAdapter: DateAdapter<MyDateType> = {
 - `presetB` → `TRADITIONAL_PRESET` 사용 권장
 
 ### 핵심 함수
+
+#### `getSaju(adapter, datetime, options)`
+
+사주 분석의 모든 결과(팔자, 십신, 신강약, 합충, 용신, 대운)를 한 번에 계산합니다.
+
+```typescript
+function getSaju<T>(
+  adapter: DateAdapter<T>,
+  dtLocal: T,
+  options: {
+    longitudeDeg: number;
+    tzOffsetHours?: number;
+    preset?: typeof STANDARD_PRESET;
+    gender?: "male" | "female";
+    includeMajorLuck?: boolean;
+    yearlyLuckRange?: { from: number; to: number };
+  }
+): SajuResult;
+```
 
 #### `getFourPillars(adapter, datetime, options)`
 
@@ -425,6 +462,74 @@ function effectiveDayDate<T>(
 }
 ```
 
+### 분석 함수
+
+#### `analyzeTenGods(year, month, day, hour)`
+
+사주 팔자의 십신과 지장간을 분석합니다.
+
+```typescript
+function analyzeTenGods(
+  year: string,
+  month: string,
+  day: string,
+  hour: string
+): FourPillarsTenGods;
+```
+
+#### `analyzeStrength(year, month, day, hour)`
+
+사주의 신강/신약을 9단계로 판정합니다.
+
+```typescript
+function analyzeStrength(
+  year: string,
+  month: string,
+  day: string,
+  hour: string
+): StrengthResult;
+```
+
+#### `analyzeRelations(year, month, day, hour)`
+
+천간과 지지의 합, 충, 형, 파, 해 관계를 분석합니다.
+
+```typescript
+function analyzeRelations(
+  year: string,
+  month: string,
+  day: string,
+  hour: string
+): RelationsResult;
+```
+
+#### `calculateMajorLuck(adapter, datetime, gender, year, month)`
+
+대운의 흐름과 시작 연령을 계산합니다.
+
+```typescript
+function calculateMajorLuck<T>(
+  adapter: DateAdapter<T>,
+  birthDateTime: T,
+  gender: "male" | "female",
+  yearPillar: string,
+  monthPillar: string
+): MajorLuckResult;
+```
+
+#### `analyzeYongShen(year, month, day, hour)`
+
+억부와 조후를 고려하여 용신과 희신을 추출합니다.
+
+```typescript
+function analyzeYongShen(
+  year: string,
+  month: string,
+  day: string,
+  hour: string
+): YongShenResult;
+```
+
 ## 고급 사용법
 
 ### 태양시 보정
@@ -498,6 +603,64 @@ const result = getFourPillars(adapter, dt, {
 | 타이베이, 대만 | 121.5654°E | `longitudeDeg: 121.5654` |
 
 ## 예제
+
+### 대운과 세운 계산
+
+```typescript
+const saju = getSaju(adapter, dt, {
+  longitudeDeg: 126.9778,
+  gender: "female",
+  includeMajorLuck: true,
+  yearlyLuckRange: { from: 2024, to: 2030 }
+});
+
+// 대운 확인
+console.log(saju.majorLuck.pillars); // 대운 목록
+console.log(saju.majorLuck.startAge); // 대운 시작 나이
+
+// 세운 확인
+saju.yearlyLuck.forEach(luck => {
+  console.log(`${luck.year}년(${luck.pillar}): ${luck.age}세`);
+});
+```
+
+### 십신 및 오행 분석
+
+```typescript
+import { analyzeTenGods, countElements } from "@gracefullight/saju";
+
+const tenGods = analyzeTenGods("己卯", "丙子", "辛巳", "戊戌");
+console.log(tenGods.dayMaster); // "辛"
+
+const elements = countElements(tenGods);
+console.log(elements); // { wood: 1, fire: 1, earth: 3, metal: 1, water: 2 }
+```
+
+### 신강약 및 용신 분석
+
+```typescript
+import { analyzeStrength, analyzeYongShen, getElementRecommendations } from "@gracefullight/saju";
+
+const strength = analyzeStrength("己卯", "丙子", "辛巳", "戊戌");
+console.log(strength.level); // "신약"
+
+const yongShen = analyzeYongShen("己卯", "丙子", "辛巳", "戊戌");
+console.log(yongShen.primary); // 용신 오행 (예: "earth")
+
+const tips = getElementRecommendations(yongShen);
+console.log(tips.colors); // 행운의 색상
+```
+
+### 합충형파해 분석
+
+```typescript
+import { analyzeRelations } from "@gracefullight/saju";
+
+const relations = analyzeRelations("己卯", "丙子", "辛巳", "戊戌");
+relations.clashes.forEach(c => {
+  console.log(`${c.positions[0]}-${c.positions[1]} 지지 충: ${c.pair[0]}-${c.pair[1]}`);
+});
+```
 
 ### 다양한 타임존에서 계산
 
