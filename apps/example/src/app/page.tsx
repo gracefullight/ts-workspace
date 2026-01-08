@@ -6,6 +6,7 @@ import { createLuxonAdapter } from "@gracefullight/saju/adapters/luxon";
 import {
   getSaju,
   countElements,
+  STAGE_INFO,
   type SajuResult,
   type Gender,
   type StemCombination,
@@ -390,7 +391,7 @@ function SajuResultDisplay({ result }: { result: SajuResult }) {
                         ? "일주"
                         : "시주"}
                 </p>
-                <p className="text-xl font-bold">{result.twelveStages[pos]}</p>
+                <p className="text-xl font-bold">{STAGE_INFO[result.twelveStages[pos]].hanja}</p>
               </div>
             ))}
           </div>
