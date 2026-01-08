@@ -23,15 +23,9 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         dropdown:
           "appearance-none bg-transparent border border-input rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer",
         dropdown_root: "relative inline-flex items-center",
-        nav: "absolute inset-x-0 flex justify-between px-1",
-        button_previous: cn(
-          buttonVariants({ variant: "outline" }),
-          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-        ),
-        button_next: cn(
-          buttonVariants({ variant: "outline" }),
-          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-        ),
+        nav: "hidden",
+        button_previous: "hidden",
+        button_next: "hidden",
         month_grid: "w-full border-collapse space-x-1",
         weekdays: "flex",
         weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
