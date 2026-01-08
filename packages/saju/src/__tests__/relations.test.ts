@@ -96,6 +96,15 @@ describe("relations", () => {
       expect(result.punishments[0].punishmentType).toBe("무은지형");
     });
 
+    it("includes transformStatus and transformReason for combinations", () => {
+      const result = analyzeRelations("甲子", "己丑", "丙寅", "辛亥");
+
+      const stemCombos = result.combinations.filter((c) => c.type === "천간합");
+      expect(stemCombos.length).toBeGreaterThan(0);
+      expect(stemCombos[0]).toHaveProperty("transformStatus");
+      expect(stemCombos[0]).toHaveProperty("transformReason");
+    });
+
     it("aggregates all relations", () => {
       const result = analyzeRelations("甲子", "庚午", "丙寅", "壬申");
 

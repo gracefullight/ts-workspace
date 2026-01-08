@@ -7,7 +7,7 @@ import {
 } from "./ten-gods";
 import { type StrengthLevel, analyzeStrength } from "./strength";
 
-export type YongShenMethod = "억부" | "조후" | "통관" | "병약";
+export type YongShenMethod = "격국" | "억부" | "조후" | "통관" | "병약";
 
 export interface YongShenResult {
   primary: Element;
@@ -15,6 +15,7 @@ export interface YongShenResult {
   method: YongShenMethod;
   reasoning: string;
   allElements: Record<Element, { isYongShen: boolean; isKiShen: boolean }>;
+  johuAdjustment: Element | null;
 }
 
 const SEASON_MONTH_BRANCHES: Record<string, string[]> = {
@@ -112,6 +113,56 @@ function getYokbuYongShen(
   return { primary, secondary };
 }
 
+function hasSpecialFormation(
+  dayMasterElement: Element,
+  strengthLevel: StrengthLevel,
+  allElements: Element[],
+): { isSpecial: boolean; type: string | null; followElement: Element | null } {
+  const isExtreme = ["극약", "극왕"].includes(strengthLevel);
+
+  if (strengthLevel === "극약") {
+    const elementCounts: Record<Element, number> = {
+      wood: 0,
+      fire: 0,
+      earth: 0,
+      metal: 0,
+      water: 0,
+    };
+    for (const elem of allElements) {
+      elementCounts[elem]++;
+    }
+
+    let dominantElement: Element | null = null;
+    let maxCount = 0;
+    for (const [elem, count] of Object.entries(elementCounts)) {
+      if (count > maxCount && elem !== dayMasterElement) {
+        maxCount = count;
+        dominantElement = elem as Element;
+      }
+    }
+
+    if (dominantElement && maxCount >= 3) {
+      return { isSpecial: true, type: "종격", followElement: dominantElement };
+    }
+  }
+
+  return { isSpecial: false, type: null, followElement: null };
+}
+
+function getJohuAdjustment(
+  dayMasterElement: Element,
+  season: string,
+  yokbuPrimary: Element,
+): Element | null {
+  const johuElements = JOHU_YONGSHEN[season][dayMasterElement];
+  const johuPrimary = johuElements[0];
+
+  if (johuPrimary !== yokbuPrimary) {
+    return johuPrimary;
+  }
+  return null;
+}
+
 export function analyzeYongShen(
   yearPillar: string,
   monthPillar: string,
@@ -125,39 +176,38 @@ export function analyzeYongShen(
 
   const strength = analyzeStrength(yearPillar, monthPillar, dayPillar, hourPillar);
 
-  const yokbu = getYokbuYongShen(dayMasterElement, strength.level);
+  const allBranches = [yearPillar[1], monthPillar[1], dayPillar[1], hourPillar[1]];
+  const allBranchElements: Element[] = allBranches.map((b) => getBranchElement(b));
 
-  const johuElements = JOHU_YONGSHEN[season][dayMasterElement];
+  const specialFormation = hasSpecialFormation(dayMasterElement, strength.level, allBranchElements);
 
   let primary: Element;
   let secondary: Element | null = null;
   let method: YongShenMethod;
   let reasoning: string;
+  let johuAdjustment: Element | null = null;
 
-  const isExtreme = ["극약", "극왕"].includes(strength.level);
-  const isModerate = ["중화", "중화신약", "중화신강"].includes(strength.level);
-
-  if (isModerate) {
-    primary = johuElements[0];
-    secondary = johuElements[1] || null;
-    method = "조후";
-    reasoning = `중화 상태로 조후용신 적용. ${season} 계절, 일간 ${dayMasterElement}에 ${primary} 필요`;
-  } else if (isExtreme) {
+  if (specialFormation.isSpecial && specialFormation.followElement) {
+    primary = specialFormation.followElement;
+    secondary = GENERATES[specialFormation.followElement];
+    method = "격국";
+    reasoning = `${specialFormation.type} 성립. ${specialFormation.followElement} 세력을 따름`;
+  } else {
+    const yokbu = getYokbuYongShen(dayMasterElement, strength.level);
     primary = yokbu.primary;
     secondary = yokbu.secondary;
     method = "억부";
-    reasoning = `${strength.level} 상태로 억부용신 적용. ${strength.level === "극왕" ? "설기" : "부조"} 필요`;
-  } else {
-    if (yokbu.primary === johuElements[0]) {
-      primary = yokbu.primary;
-      secondary = johuElements[1] || yokbu.secondary;
-      method = "억부";
-      reasoning = `억부와 조후 일치. ${strength.level} 상태, ${season} 계절`;
+
+    const isStrong = ["신강", "태강", "극왕", "중화신강"].includes(strength.level);
+    if (isStrong) {
+      reasoning = `${strength.level} 상태로 설기(洩氣) 필요. ${primary}로 기운을 발산`;
     } else {
-      primary = yokbu.primary;
-      secondary = johuElements[0];
-      method = "억부";
-      reasoning = `억부용신 우선 적용. ${strength.level} 상태. 조후(${johuElements[0]})도 고려`;
+      reasoning = `${strength.level} 상태로 부조(扶助) 필요. ${primary}로 일간을 생조`;
+    }
+
+    johuAdjustment = getJohuAdjustment(dayMasterElement, season, primary);
+    if (johuAdjustment) {
+      reasoning += `. 조후 보정: ${season} 계절에 ${johuAdjustment} 참고`;
     }
   }
 
@@ -173,12 +223,14 @@ export function analyzeYongShen(
   if (secondary) allElements[secondary].isYongShen = true;
 
   const isStrong = ["신강", "태강", "극왕", "중화신강"].includes(strength.level);
-  if (isStrong) {
-    allElements[dayMasterElement].isKiShen = true;
-    allElements[GENERATED_BY[dayMasterElement]].isKiShen = true;
-  } else {
-    allElements[CONTROLS[dayMasterElement]].isKiShen = true;
-    allElements[CONTROLLED_BY[dayMasterElement]].isKiShen = true;
+  if (method !== "격국") {
+    if (isStrong) {
+      allElements[dayMasterElement].isKiShen = true;
+      allElements[GENERATED_BY[dayMasterElement]].isKiShen = true;
+    } else {
+      allElements[CONTROLS[dayMasterElement]].isKiShen = true;
+      allElements[CONTROLLED_BY[dayMasterElement]].isKiShen = true;
+    }
   }
 
   for (const elem of ELEMENTS) {
@@ -193,6 +245,7 @@ export function analyzeYongShen(
     method,
     reasoning,
     allElements,
+    johuAdjustment,
   };
 }
 

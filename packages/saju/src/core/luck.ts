@@ -13,11 +13,19 @@ export interface LuckPillar {
   pillar: string;
 }
 
+export interface StartAgeDetail {
+  years: number;
+  months: number;
+  days: number;
+}
+
 export interface MajorLuckResult {
   gender: Gender;
   yearStemPolarity: Polarity;
   isForward: boolean;
   startAge: number;
+  startAgeDetail: StartAgeDetail;
+  daysToTerm: number;
   pillars: LuckPillar[];
 }
 
@@ -48,8 +56,8 @@ export function calculateMajorLuck<T>(
   monthPillar: string,
   options: {
     count?: number;
-    nextTermDate?: T;
-    prevTermDate?: T;
+    nextJieMillis?: number;
+    prevJieMillis?: number;
   } = {},
 ): MajorLuckResult {
   const { count = 8 } = options;
@@ -61,20 +69,28 @@ export function calculateMajorLuck<T>(
     (yearStemPolarity === "yang" && gender === "male") ||
     (yearStemPolarity === "yin" && gender === "female");
 
-  let daysToTerm = 30;
+  const birthMillis = adapter.toMillis(birthDateTime);
+  const msPerDay = 1000 * 60 * 60 * 24;
 
-  if (options.nextTermDate && options.prevTermDate) {
-    const birthMillis = adapter.toMillis(birthDateTime);
+  let daysToTerm: number;
+
+  if (options.nextJieMillis !== undefined && options.prevJieMillis !== undefined) {
     if (isForward) {
-      const nextTermMillis = adapter.toMillis(options.nextTermDate);
-      daysToTerm = Math.abs(nextTermMillis - birthMillis) / (1000 * 60 * 60 * 24);
+      daysToTerm = Math.abs(options.nextJieMillis - birthMillis) / msPerDay;
     } else {
-      const prevTermMillis = adapter.toMillis(options.prevTermDate);
-      daysToTerm = Math.abs(birthMillis - prevTermMillis) / (1000 * 60 * 60 * 24);
+      daysToTerm = Math.abs(birthMillis - options.prevJieMillis) / msPerDay;
     }
+  } else {
+    daysToTerm = 30;
   }
 
-  const startAge = Math.round(daysToTerm / 3);
+  const totalMonths = Math.round((daysToTerm / 3) * 12);
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  const days = Math.round(((daysToTerm / 3) * 12 - totalMonths) * 30);
+
+  const startAge = years;
+  const startAgeDetail: StartAgeDetail = { years, months, days: Math.abs(days) };
 
   const monthIdx60 = getMonthPillarIndex(monthPillar);
   const pillars: LuckPillar[] = [];
@@ -98,6 +114,8 @@ export function calculateMajorLuck<T>(
     yearStemPolarity,
     isForward,
     startAge,
+    startAgeDetail,
+    daysToTerm: Math.round(daysToTerm * 10) / 10,
     pillars,
   };
 }

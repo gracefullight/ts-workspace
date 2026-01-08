@@ -25,14 +25,19 @@ describe("yongshen", () => {
       expect(hasKiShen).toBe(true);
     });
 
-    it("uses 조후 method for 중화 strength", () => {
+    it("uses 억부 method for 중화 strength (조후 is adjustment, not primary)", () => {
       const result = analyzeYongShen("甲子", "丙寅", "庚申", "丁亥");
-      expect(["억부", "조후"]).toContain(result.method);
+      expect(["억부", "격국"]).toContain(result.method);
     });
 
     it("uses 억부 method for extreme strength", () => {
       const result = analyzeYongShen("甲寅", "甲寅", "甲寅", "甲寅");
       expect(result.method).toBe("억부");
+    });
+
+    it("includes johuAdjustment field in result", () => {
+      const result = analyzeYongShen("甲子", "丙寅", "甲辰", "乙亥");
+      expect("johuAdjustment" in result).toBe(true);
     });
 
     it("includes reasoning in result", () => {

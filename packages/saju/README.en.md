@@ -15,12 +15,12 @@
 - **Solar Time Correction** - Optional mean solar time adjustment based on longitude
 - **Tree-shakeable** - Import only what you need
 - **Fully Typed** - Complete TypeScript definitions
-- **Well Tested** - 176+ tests with 91%+ coverage
+- **Well Tested** - 180+ tests with 91%+ coverage
 - **Ten Gods Analysis** - Detailed ten gods and five elements distribution with hidden stems
-- **Strength Assessment** - 7-level strength analysis considering season, support, and momentum
-- **Relations Analysis** - Combinations, clashes, harms, punishments analysis
-- **Major/Yearly Luck** - Major luck and yearly luck calculation based on gender and year pillar
-- **Yongshen Extraction** - Favorable element recommendation with fortune enhancement guide
+- **Strength Assessment** - 9-level strength analysis with monthly strength (得令), root strength (通根), transparency (透干), and hidden stem weights (本中餘氣)
+- **Relations Analysis** - Combinations, clashes, harms, punishments with transformation (化) status and conditions
+- **Major/Yearly Luck** - Solar term (節氣) based accurate luck start calculation, major luck and yearly luck based on gender and year pillar
+- **Yongshen Extraction** - Favorable element recommendation following 格局→抑扶→調候 priority with fortune enhancement guide
 - **Solar Terms Analysis** - Current/next solar term info with elapsed days calculation
 
 ## What is Saju (四柱)?

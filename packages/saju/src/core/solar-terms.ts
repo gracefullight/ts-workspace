@@ -40,19 +40,43 @@ export interface SolarTerm {
   longitude: number;
 }
 
+export interface SolarTermDateInfo {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+}
+
 export interface SolarTermInfo {
   /** Current solar term (the one that has passed) */
   current: SolarTerm;
   /** Date when the current solar term started */
-  currentDate: { year: number; month: number; day: number; hour: number; minute: number };
+  currentDate: SolarTermDateInfo;
+  /** Milliseconds timestamp of current solar term (for calculations) */
+  currentMillis: number;
   /** Days elapsed since the current solar term */
   daysSinceCurrent: number;
   /** Next solar term (upcoming) */
   next: SolarTerm;
   /** Date when the next solar term will start */
-  nextDate: { year: number; month: number; day: number; hour: number; minute: number };
+  nextDate: SolarTermDateInfo;
+  /** Milliseconds timestamp of next solar term (for calculations) */
+  nextMillis: number;
   /** Days until the next solar term */
   daysUntilNext: number;
+  /** Previous "節" (Jie) - the solar term that marks month boundary (for major luck calculation) */
+  prevJie: SolarTerm;
+  /** Date of previous Jie */
+  prevJieDate: SolarTermDateInfo;
+  /** Milliseconds timestamp of previous Jie */
+  prevJieMillis: number;
+  /** Next "節" (Jie) - the solar term that marks month boundary (for major luck calculation) */
+  nextJie: SolarTerm;
+  /** Date of next Jie */
+  nextJieDate: SolarTermDateInfo;
+  /** Milliseconds timestamp of next Jie */
+  nextJieMillis: number;
 }
 
 function normDeg(x: number): number {
@@ -168,27 +192,103 @@ function getApproximateMonth(termIndex: number): number {
   return months[termIndex];
 }
 
-/**
- * Analyze solar terms for a given date
- * Returns the current (previous) and next solar terms with dates and days elapsed/remaining
- */
+function isJie(termIndex: number): boolean {
+  return termIndex % 2 === 0;
+}
+
+function findPrevJie<T>(
+  adapter: DateAdapter<T>,
+  dtLocal: T,
+  currentIndex: number,
+): { term: SolarTerm; termLocal: T } {
+  const year = adapter.getYear(dtLocal);
+  const zone = adapter.getZoneName(dtLocal);
+  const dtMillis = adapter.toMillis(dtLocal);
+
+  let jieIndex = isJie(currentIndex) ? currentIndex : currentIndex - 1;
+  if (jieIndex < 0) jieIndex = 22;
+
+  for (let attempts = 0; attempts < 3; attempts++) {
+    const term = SOLAR_TERMS[jieIndex];
+    const month = getApproximateMonth(jieIndex);
+
+    for (let yearOffset = 0; yearOffset <= 1; yearOffset++) {
+      const tryYear = year - yearOffset;
+      const termUtc = findSolarTermDate(adapter, term, tryYear, month);
+      const termLocal = adapter.setZone(termUtc, zone);
+
+      if (adapter.toMillis(termLocal) <= dtMillis) {
+        return { term, termLocal };
+      }
+    }
+
+    jieIndex = jieIndex - 2;
+    if (jieIndex < 0) jieIndex += 24;
+  }
+
+  const fallbackTerm = SOLAR_TERMS[jieIndex];
+  const fallbackMonth = getApproximateMonth(jieIndex);
+  const fallbackUtc = findSolarTermDate(adapter, fallbackTerm, year - 1, fallbackMonth);
+  return { term: fallbackTerm, termLocal: adapter.setZone(fallbackUtc, zone) };
+}
+
+function findNextJie<T>(
+  adapter: DateAdapter<T>,
+  dtLocal: T,
+  currentIndex: number,
+): { term: SolarTerm; termLocal: T } {
+  const year = adapter.getYear(dtLocal);
+  const zone = adapter.getZoneName(dtLocal);
+  const dtMillis = adapter.toMillis(dtLocal);
+
+  let jieIndex = isJie(currentIndex) ? (currentIndex + 2) % 24 : (currentIndex + 1) % 24;
+
+  for (let attempts = 0; attempts < 3; attempts++) {
+    const term = SOLAR_TERMS[jieIndex];
+    const month = getApproximateMonth(jieIndex);
+
+    for (let yearOffset = 0; yearOffset <= 1; yearOffset++) {
+      const tryYear = year + yearOffset;
+      const termUtc = findSolarTermDate(adapter, term, tryYear, month);
+      const termLocal = adapter.setZone(termUtc, zone);
+
+      if (adapter.toMillis(termLocal) > dtMillis) {
+        return { term, termLocal };
+      }
+    }
+
+    jieIndex = (jieIndex + 2) % 24;
+  }
+
+  const fallbackTerm = SOLAR_TERMS[jieIndex];
+  const fallbackMonth = getApproximateMonth(jieIndex);
+  const fallbackUtc = findSolarTermDate(adapter, fallbackTerm, year + 1, fallbackMonth);
+  return { term: fallbackTerm, termLocal: adapter.setZone(fallbackUtc, zone) };
+}
+
+function toDateInfo<T>(adapter: DateAdapter<T>, dt: T): SolarTermDateInfo {
+  return {
+    year: adapter.getYear(dt),
+    month: adapter.getMonth(dt),
+    day: adapter.getDay(dt),
+    hour: adapter.getHour(dt),
+    minute: adapter.getMinute(dt),
+  };
+}
+
 export function analyzeSolarTerms<T>(adapter: DateAdapter<T>, dtLocal: T): SolarTermInfo {
   const dtUtc = adapter.toUTC(dtLocal);
   const currentLongitude = sunApparentLongitude(adapter, dtUtc);
 
-  // Find current term index (the one that has passed)
   const currentIndex = getSolarTermIndexFromLongitude(currentLongitude);
   const currentTerm = SOLAR_TERMS[currentIndex];
   const nextIndex = (currentIndex + 1) % 24;
   const nextTerm = SOLAR_TERMS[nextIndex];
 
-  // Calculate the year for finding term dates
   const year = adapter.getYear(dtLocal);
   const currentMonth = getApproximateMonth(currentIndex);
   const nextMonth = getApproximateMonth(nextIndex);
 
-  // Find current term date
-  // If current term is in late year (소한, 대한) and we're in early year, look at previous year
   let currentYear = year;
   if (currentMonth === 12 && adapter.getMonth(dtLocal) <= 2) {
     currentYear = year - 1;
@@ -196,12 +296,10 @@ export function analyzeSolarTerms<T>(adapter: DateAdapter<T>, dtLocal: T): Solar
     currentYear = year + 1;
   }
 
-  // Adjust current year if the term hasn't occurred yet this year
   let currentTermUtc = findSolarTermDate(adapter, currentTerm, currentYear, currentMonth);
   let currentTermLocal = adapter.setZone(currentTermUtc, adapter.getZoneName(dtLocal));
 
   if (adapter.toMillis(currentTermLocal) > adapter.toMillis(dtLocal)) {
-    // Term hasn't occurred yet, look at previous occurrence
     if (currentMonth <= 2) {
       currentYear -= 1;
     }
@@ -209,7 +307,6 @@ export function analyzeSolarTerms<T>(adapter: DateAdapter<T>, dtLocal: T): Solar
     currentTermLocal = adapter.setZone(currentTermUtc, adapter.getZoneName(dtLocal));
   }
 
-  // Find next term date
   let nextYear = year;
   if (nextMonth === 1 && adapter.getMonth(dtLocal) >= 11) {
     nextYear = year + 1;
@@ -219,7 +316,6 @@ export function analyzeSolarTerms<T>(adapter: DateAdapter<T>, dtLocal: T): Solar
   let nextTermLocal = adapter.setZone(nextTermUtc, adapter.getZoneName(dtLocal));
 
   if (adapter.toMillis(nextTermLocal) <= adapter.toMillis(dtLocal)) {
-    // Next term has already passed, look at next occurrence
     if (nextMonth >= 11) {
       nextYear += 1;
     }
@@ -227,34 +323,32 @@ export function analyzeSolarTerms<T>(adapter: DateAdapter<T>, dtLocal: T): Solar
     nextTermLocal = adapter.setZone(nextTermUtc, adapter.getZoneName(dtLocal));
   }
 
-  // Calculate days
+  const { term: prevJie, termLocal: prevJieLocal } = findPrevJie(adapter, dtLocal, currentIndex);
+  const { term: nextJie, termLocal: nextJieLocal } = findNextJie(adapter, dtLocal, currentIndex);
+
   const msPerDay = 24 * 60 * 60 * 1000;
-  const daysSinceCurrent = Math.floor(
-    (adapter.toMillis(dtLocal) - adapter.toMillis(currentTermLocal)) / msPerDay,
-  );
-  const daysUntilNext = Math.ceil(
-    (adapter.toMillis(nextTermLocal) - adapter.toMillis(dtLocal)) / msPerDay,
-  );
+  const currentMillis = adapter.toMillis(currentTermLocal);
+  const nextMillis = adapter.toMillis(nextTermLocal);
+  const dtMillis = adapter.toMillis(dtLocal);
+
+  const daysSinceCurrent = Math.floor((dtMillis - currentMillis) / msPerDay);
+  const daysUntilNext = Math.ceil((nextMillis - dtMillis) / msPerDay);
 
   return {
     current: { ...currentTerm },
-    currentDate: {
-      year: adapter.getYear(currentTermLocal),
-      month: adapter.getMonth(currentTermLocal),
-      day: adapter.getDay(currentTermLocal),
-      hour: adapter.getHour(currentTermLocal),
-      minute: adapter.getMinute(currentTermLocal),
-    },
+    currentDate: toDateInfo(adapter, currentTermLocal),
+    currentMillis,
     daysSinceCurrent,
     next: { ...nextTerm },
-    nextDate: {
-      year: adapter.getYear(nextTermLocal),
-      month: adapter.getMonth(nextTermLocal),
-      day: adapter.getDay(nextTermLocal),
-      hour: adapter.getHour(nextTermLocal),
-      minute: adapter.getMinute(nextTermLocal),
-    },
+    nextDate: toDateInfo(adapter, nextTermLocal),
+    nextMillis,
     daysUntilNext,
+    prevJie: { ...prevJie },
+    prevJieDate: toDateInfo(adapter, prevJieLocal),
+    prevJieMillis: adapter.toMillis(prevJieLocal),
+    nextJie: { ...nextJie },
+    nextJieDate: toDateInfo(adapter, nextJieLocal),
+    nextJieMillis: adapter.toMillis(nextJieLocal),
   };
 }
 
@@ -267,11 +361,11 @@ export function getSolarTermsForYear<T>(
   timezone: string,
 ): Array<{
   term: SolarTerm;
-  date: { year: number; month: number; day: number; hour: number; minute: number };
+  date: SolarTermDateInfo;
 }> {
   const result: Array<{
     term: SolarTerm;
-    date: { year: number; month: number; day: number; hour: number; minute: number };
+    date: SolarTermDateInfo;
   }> = [];
 
   for (let i = 0; i < SOLAR_TERMS.length; i++) {
@@ -286,13 +380,7 @@ export function getSolarTermsForYear<T>(
 
     result.push({
       term: { ...term },
-      date: {
-        year: adapter.getYear(termLocal),
-        month: adapter.getMonth(termLocal),
-        day: adapter.getDay(termLocal),
-        hour: adapter.getHour(termLocal),
-        minute: adapter.getMinute(termLocal),
-      },
+      date: toDateInfo(adapter, termLocal),
     });
   }
 

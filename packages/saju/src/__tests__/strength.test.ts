@@ -13,13 +13,15 @@ describe("strength", () => {
     });
 
     it("identifies 득령 when month supports day master", () => {
+      // 甲木 day master in 寅月 (wood month) = 득령 (1.0 multiplier)
       const result = analyzeStrength("甲子", "丙寅", "甲辰", "乙亥");
-      expect(result.factors.deukryeong).toBe(true);
+      expect(result.factors.deukryeong).toBeGreaterThanOrEqual(0.7);
     });
 
     it("identifies 실령 when month does not support day master", () => {
+      // 甲木 day master in 申月 (metal month) = 실령 (0.1 multiplier)
       const result = analyzeStrength("甲子", "庚申", "甲辰", "乙亥");
-      expect(result.factors.deukryeong).toBe(false);
+      expect(result.factors.deukryeong).toBeLessThanOrEqual(0.3);
     });
 
     it("calculates 득지 from day and hour branches", () => {

@@ -1,4 +1,7 @@
 import type { Element } from "./ten-gods";
+import { getStemElement, getBranchElement } from "./ten-gods";
+
+export type TransformationStatus = "합" | "반합" | "화" | "불화";
 
 export type StemCombinationResult = {
   stems: [string, string];
@@ -66,7 +69,7 @@ export const BRANCH_HARMS: [string, string][] = [
 
 export const BRANCH_PUNISHMENTS: { branches: string[]; type: string }[] = [
   { branches: ["寅", "巳", "申"], type: "무은지형" },
-  { branches: ["丑", "戌", "未"], type: "무례지형" },
+  { branches: ["丑", "戌", "未"], type: "시세지형" },
   { branches: ["子", "卯"], type: "무례지형" },
   { branches: ["辰", "辰"], type: "자형" },
   { branches: ["午", "午"], type: "자형" },
@@ -88,6 +91,8 @@ export interface StemCombination {
   pair: [string, string];
   positions: [string, string];
   resultElement: Element;
+  transformStatus: TransformationStatus;
+  transformReason: string;
 }
 
 export interface BranchSixCombination {
@@ -95,6 +100,8 @@ export interface BranchSixCombination {
   pair: [string, string];
   positions: [string, string];
   resultElement: Element;
+  transformStatus: TransformationStatus;
+  transformReason: string;
 }
 
 export interface BranchTripleCombination {
@@ -103,6 +110,8 @@ export interface BranchTripleCombination {
   positions: string[];
   resultElement: Element;
   isComplete: boolean;
+  transformStatus: TransformationStatus;
+  transformReason: string;
 }
 
 export interface BranchDirectionalCombination {
@@ -111,6 +120,8 @@ export interface BranchDirectionalCombination {
   positions: string[];
   resultElement: Element;
   isComplete: boolean;
+  transformStatus: TransformationStatus;
+  transformReason: string;
 }
 
 export interface BranchClash {
@@ -164,12 +175,80 @@ export interface RelationsResult {
 
 type PillarPosition = "year" | "month" | "day" | "hour";
 
+const MONTH_BRANCH_ELEMENT_SUPPORT: Record<string, Element[]> = {
+  寅: ["wood"],
+  卯: ["wood"],
+  辰: ["wood", "earth", "water"],
+  巳: ["fire"],
+  午: ["fire"],
+  未: ["fire", "earth"],
+  申: ["metal"],
+  酉: ["metal"],
+  戌: ["metal", "earth", "fire"],
+  亥: ["water"],
+  子: ["water"],
+  丑: ["water", "earth", "metal"],
+};
+
+function checkTransformationCondition(
+  resultElement: Element,
+  monthBranch: string,
+  allBranches: string[],
+  isComplete: boolean,
+): { status: TransformationStatus; reason: string } {
+  const supportedElements = MONTH_BRANCH_ELEMENT_SUPPORT[monthBranch] || [];
+  const hasMonthSupport = supportedElements.includes(resultElement);
+
+  const branchElements = allBranches.map((b) => getBranchElement(b));
+  const resultElementCount = branchElements.filter((e) => e === resultElement).length;
+  const hasStrengthSupport = resultElementCount >= 2;
+
+  if (!isComplete) {
+    return { status: "반합", reason: "불완전 합 - 일부 지지 부재" };
+  }
+
+  if (hasMonthSupport) {
+    return { status: "화", reason: `월령(${monthBranch})이 ${resultElement}을(를) 지지` };
+  }
+
+  if (hasStrengthSupport) {
+    return { status: "화", reason: `${resultElement} 기세 충분(${resultElementCount}개)` };
+  }
+
+  return { status: "불화", reason: "월령 및 기세 미충족으로 화 불성립" };
+}
+
+function checkStemTransformationCondition(
+  resultElement: Element,
+  monthBranch: string,
+  allStems: string[],
+): { status: TransformationStatus; reason: string } {
+  const supportedElements = MONTH_BRANCH_ELEMENT_SUPPORT[monthBranch] || [];
+  const hasMonthSupport = supportedElements.includes(resultElement);
+
+  const stemElements = allStems.map((s) => getStemElement(s));
+  const resultElementCount = stemElements.filter((e) => e === resultElement).length;
+  const hasStrengthSupport = resultElementCount >= 2;
+
+  if (hasMonthSupport) {
+    return { status: "화", reason: `월령(${monthBranch})이 ${resultElement}을(를) 지지` };
+  }
+
+  if (hasStrengthSupport) {
+    return { status: "화", reason: `${resultElement} 기세 충분(${resultElementCount}개)` };
+  }
+
+  return { status: "불화", reason: "월령 및 기세 미충족으로 화 불성립" };
+}
+
 export function analyzeRelations(
   yearPillar: string,
   monthPillar: string,
   dayPillar: string,
   hourPillar: string,
 ): RelationsResult {
+  const monthBranch = monthPillar[1];
+
   const stems: { char: string; position: PillarPosition }[] = [
     { char: yearPillar[0], position: "year" },
     { char: monthPillar[0], position: "month" },
@@ -183,6 +262,9 @@ export function analyzeRelations(
     { char: dayPillar[1], position: "day" },
     { char: hourPillar[1], position: "hour" },
   ];
+
+  const allStemChars = stems.map((s) => s.char);
+  const allBranchChars = branches.map((b) => b.char);
 
   const combinations: RelationsResult["combinations"] = [];
   const clashes: BranchClash[] = [];
@@ -199,11 +281,18 @@ export function analyzeRelations(
           (s1.char === combo.stems[0] && s2.char === combo.stems[1]) ||
           (s1.char === combo.stems[1] && s2.char === combo.stems[0])
         ) {
+          const transform = checkStemTransformationCondition(
+            combo.resultElement,
+            monthBranch,
+            allStemChars,
+          );
           combinations.push({
             type: "천간합",
             pair: [s1.char, s2.char],
             positions: [s1.position, s2.position],
             resultElement: combo.resultElement,
+            transformStatus: transform.status,
+            transformReason: transform.reason,
           });
         }
       }
@@ -220,11 +309,19 @@ export function analyzeRelations(
           (b1.char === combo.branches[0] && b2.char === combo.branches[1]) ||
           (b1.char === combo.branches[1] && b2.char === combo.branches[0])
         ) {
+          const transform = checkTransformationCondition(
+            combo.resultElement,
+            monthBranch,
+            allBranchChars,
+            true,
+          );
           combinations.push({
             type: "육합",
             pair: [b1.char, b2.char],
             positions: [b1.position, b2.position],
             resultElement: combo.resultElement,
+            transformStatus: transform.status,
+            transformReason: transform.reason,
           });
         }
       }
@@ -275,12 +372,21 @@ export function analyzeRelations(
     const matched = combo.branches.filter((b) => branchChars.includes(b));
     if (matched.length >= 2) {
       const positions = matched.map((m) => branches.find((b) => b.char === m)!.position);
+      const isComplete = matched.length === 3;
+      const transform = checkTransformationCondition(
+        combo.resultElement,
+        monthBranch,
+        allBranchChars,
+        isComplete,
+      );
       combinations.push({
         type: "삼합",
         branches: matched,
         positions,
         resultElement: combo.resultElement,
-        isComplete: matched.length === 3,
+        isComplete,
+        transformStatus: transform.status,
+        transformReason: transform.reason,
       });
     }
   }
@@ -289,12 +395,21 @@ export function analyzeRelations(
     const matched = combo.branches.filter((b) => branchChars.includes(b));
     if (matched.length >= 2) {
       const positions = matched.map((m) => branches.find((b) => b.char === m)!.position);
+      const isComplete = matched.length === 3;
+      const transform = checkTransformationCondition(
+        combo.resultElement,
+        monthBranch,
+        allBranchChars,
+        isComplete,
+      );
       combinations.push({
         type: "방합",
         branches: matched,
         positions,
         resultElement: combo.resultElement,
-        isComplete: matched.length === 3,
+        isComplete,
+        transformStatus: transform.status,
+        transformReason: transform.reason,
       });
     }
   }

@@ -79,6 +79,7 @@ export {
   type LuckPillar,
   type MajorLuckResult,
   type YearlyLuckResult,
+  type StartAgeDetail,
   calculateMajorLuck,
   calculateYearlyLuck,
   getYearPillar,
@@ -98,6 +99,7 @@ export {
   type SolarTermName,
   type SolarTermHanja,
   type SolarTermInfo,
+  type SolarTermDateInfo,
   analyzeSolarTerms,
   getSolarTermsForYear,
 } from "@/core/solar-terms";
@@ -114,6 +116,7 @@ import {
   type Gender,
   type MajorLuckResult,
   type YearlyLuckResult,
+  type StartAgeDetail,
 } from "@/core/luck";
 import type { LunarDate } from "@/core/lunar";
 import { analyzeSolarTerms, type SolarTermInfo } from "@/core/solar-terms";
@@ -177,7 +180,10 @@ export function getSaju<T>(
     relations,
     yongShen,
     solarTerms,
-    majorLuck: calculateMajorLuck(adapter, dtLocal, options.gender, year, month),
+    majorLuck: calculateMajorLuck(adapter, dtLocal, options.gender, year, month, {
+      nextJieMillis: solarTerms.nextJieMillis,
+      prevJieMillis: solarTerms.prevJieMillis,
+    }),
     yearlyLuck: calculateYearlyLuck(
       fourPillars.meta.solarYearUsed,
       options.yearlyLuckRange?.from ?? (options.currentYear ?? new Date().getFullYear()) - 5,

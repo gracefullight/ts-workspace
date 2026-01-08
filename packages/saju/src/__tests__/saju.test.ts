@@ -143,4 +143,45 @@ describe("getSaju integration", () => {
     expect(result.tenGods.dayMaster).toBe("丁");
     expect(result.tenGods.day.stem.tenGod).toBe("일간");
   });
+
+  it("calculates major luck start age based on actual solar terms (not fixed 10)", async () => {
+    const adapter = await createLuxonAdapter();
+    const dt = DateTime.fromObject(
+      { year: 1990, month: 2, day: 1, hour: 12, minute: 10 },
+      { zone: "Asia/Seoul" },
+    );
+
+    const result = getSaju(adapter, dt, {
+      longitudeDeg: 126.9778,
+      gender: "male",
+      preset: STANDARD_PRESET,
+    });
+
+    expect(result.majorLuck.startAge).not.toBe(10);
+    expect(result.majorLuck.startAgeDetail).toBeDefined();
+    expect(result.majorLuck.startAgeDetail.years).toBeGreaterThanOrEqual(0);
+    expect(result.majorLuck.startAgeDetail.months).toBeGreaterThanOrEqual(0);
+    expect(result.majorLuck.daysToTerm).toBeGreaterThan(0);
+  });
+
+  it("includes Jie (節) solar term info for major luck calculation", async () => {
+    const adapter = await createLuxonAdapter();
+    const dt = DateTime.fromObject(
+      { year: 2024, month: 3, day: 15, hour: 12 },
+      { zone: "Asia/Seoul" },
+    );
+
+    const result = getSaju(adapter, dt, {
+      longitudeDeg: 126.9778,
+      gender: "female",
+      preset: STANDARD_PRESET,
+    });
+
+    expect(result.solarTerms.prevJie).toBeDefined();
+    expect(result.solarTerms.nextJie).toBeDefined();
+    expect(result.solarTerms.prevJieMillis).toBeGreaterThan(0);
+    expect(result.solarTerms.nextJieMillis).toBeGreaterThan(0);
+    expect(result.solarTerms.prevJieDate).toBeDefined();
+    expect(result.solarTerms.nextJieDate).toBeDefined();
+  });
 });
