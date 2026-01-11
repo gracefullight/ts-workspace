@@ -106,6 +106,7 @@ describe("getSaju integration", () => {
       longitudeDeg: 126.9778,
       gender: "male",
       preset: STANDARD_PRESET,
+      currentYear: 2024,
     });
 
     expect(result.yearlyLuck.length).toBe(16);
