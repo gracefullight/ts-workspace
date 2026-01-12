@@ -96,7 +96,7 @@ jobs:
           pnpm -r --filter './apps/*' exec -- sh -c '
             app_name=$(basename $(pwd))
             echo "  <li class=\"app-item\">" >> ../../deploy_dist/index.html
-            echo "    <a href=\"/workspace/${app_name}/\" class=\"app-link\">" >> ../../deploy_dist/index.html
+            echo "    <a href=\"/ts-workspace/${app_name}/\" class=\"app-link\">" >> ../../deploy_dist/index.html
             echo "      🚀 ${app_name} →" >> ../../deploy_dist/index.html
             echo "    </a>" >> ../../deploy_dist/index.html
             echo "  </li>" >> ../../deploy_dist/index.html

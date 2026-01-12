@@ -39,7 +39,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/gracefullight/workspace/packages/validate-branch"
+    "url": "https://github.com/gracefullight/ts-workspace.git",
+    "directory": "packages/validate-branch"
   },
   "license": "MIT",
   "publishConfig": {

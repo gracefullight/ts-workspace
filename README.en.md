@@ -15,7 +15,7 @@
 
 ## Demo
 
-- **[Saju Example](https://gracefullight.dev/workspace/saju-example/)** - Next.js example app
+- **[Saju Example](https://gracefullight.dev/ts-workspace/saju-example/)** - Next.js example app
 
 
 

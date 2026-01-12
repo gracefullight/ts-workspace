@@ -46,7 +46,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/gracefullight/workspace/packages/saju"
+    "url": "https://github.com/gracefullight/ts-workspace.git",
+    "directory": "packages/saju"
   },
   "license": "MIT",
   "publishConfig": {
