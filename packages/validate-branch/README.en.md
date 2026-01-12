@@ -130,6 +130,52 @@ module.exports = {
 };
 ```
 
+### Using Presets (`branch.config.ts`)
+
+You can use built-in presets instead of custom patterns.
+
+```typescript
+import type { Config } from "@gracefullight/validate-branch";
+
+const config: Config = {
+  preset: "jira", // "gitflow" or "jira"
+  description: "JIRA ticket-based branch naming",
+};
+
+export default config;
+```
+
+**Available Presets:**
+
+#### `gitflow` (default)
+
+Pattern following Git Flow branching strategy.
+
+| Status | Branch Examples |
+|--------|-----------------|
+| ✅ Allowed | `main`, `master`, `develop`, `stage` |
+| ✅ Allowed | `feature/login`, `feature/user-auth`, `feature/add-payment` |
+| ✅ Allowed | `fix/memory-leak`, `fix/typo`, `fix/null-pointer` |
+| ✅ Allowed | `hotfix/critical-bug`, `hotfix/security-patch` |
+| ✅ Allowed | `release/v1.0.0`, `release/2.3.1` |
+| ❌ Rejected | `login`, `bugfix`, `my-branch` (no prefix) |
+| ❌ Rejected | `feature/`, `fix/` (no name) |
+| ❌ Rejected | `Feature/Login`, `FIX/bug` (uppercase prefix) |
+
+#### `jira`
+
+JIRA ticket number-based branch pattern.
+
+| Status | Branch Examples |
+|--------|-----------------|
+| ✅ Allowed | `main`, `master`, `develop`, `stage` |
+| ✅ Allowed | `FEATURE-123`, `FEATURE-1`, `FEATURE-99999` |
+| ✅ Allowed | `BUG-456`, `STORY-789`, `TASK-101`, `HOTFIX-202` |
+| ❌ Rejected | `feature/login` (gitflow style) |
+| ❌ Rejected | `FEATURE-ABC` (not a number) |
+| ❌ Rejected | `feature-123` (lowercase) |
+| ❌ Rejected | `JIRA-123/description` (contains slash) |
+
 ## API Reference
 
 ### `validateBranchName(branchName, options?)`
@@ -227,9 +273,10 @@ function loadConfig(): Promise<Config | null>
 
 ```typescript
 interface Config {
-  pattern?: string;        // Single regex pattern
-  patterns?: string[];     // Multiple regex patterns (planned)
-  description?: string;    // Config description
+  pattern?: string;                    // Single regex pattern
+  patterns?: string[];                 // Multiple regex patterns (planned)
+  preset?: "gitflow" | "jira";         // Preset pattern (default: "gitflow")
+  description?: string;                // Config description
 }
 ```
 

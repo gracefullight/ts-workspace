@@ -130,6 +130,52 @@ module.exports = {
 };
 ```
 
+### 프리셋 사용 (`branch.config.ts`)
+
+커스텀 패턴 대신 내장 프리셋을 사용할 수 있습니다.
+
+```typescript
+import type { Config } from "@gracefullight/validate-branch";
+
+const config: Config = {
+  preset: "jira", // "gitflow" 또는 "jira"
+  description: "JIRA 티켓 기반 브랜치 네이밍",
+};
+
+export default config;
+```
+
+**사용 가능한 프리셋:**
+
+#### `gitflow` (기본값)
+
+Git Flow 브랜치 전략을 따르는 패턴입니다.
+
+| 상태 | 브랜치 예시 |
+|------|------------|
+| ✅ 허용 | `main`, `master`, `develop`, `stage` |
+| ✅ 허용 | `feature/login`, `feature/user-auth`, `feature/add-payment` |
+| ✅ 허용 | `fix/memory-leak`, `fix/typo`, `fix/null-pointer` |
+| ✅ 허용 | `hotfix/critical-bug`, `hotfix/security-patch` |
+| ✅ 허용 | `release/v1.0.0`, `release/2.3.1` |
+| ❌ 거부 | `login`, `bugfix`, `my-branch` (prefix 없음) |
+| ❌ 거부 | `feature/`, `fix/` (이름 없음) |
+| ❌ 거부 | `Feature/Login`, `FIX/bug` (대문자 prefix) |
+
+#### `jira`
+
+JIRA 티켓 번호 기반 브랜치 패턴입니다.
+
+| 상태 | 브랜치 예시 |
+|------|------------|
+| ✅ 허용 | `main`, `master`, `develop`, `stage` |
+| ✅ 허용 | `FEATURE-123`, `FEATURE-1`, `FEATURE-99999` |
+| ✅ 허용 | `BUG-456`, `STORY-789`, `TASK-101`, `HOTFIX-202` |
+| ❌ 거부 | `feature/login` (gitflow 스타일) |
+| ❌ 거부 | `FEATURE-ABC` (숫자 아님) |
+| ❌ 거부 | `feature-123` (소문자) |
+| ❌ 거부 | `JIRA-123/description` (슬래시 포함) |
+
 ## API 레퍼런스
 
 ### `validateBranchName(branchName, options?)`
@@ -227,9 +273,10 @@ function loadConfig(): Promise<Config | null>
 
 ```typescript
 interface Config {
-  pattern?: string;        // 단일 정규식 패턴
-  patterns?: string[];     // 다중 정규식 패턴 (예정)
-  description?: string;    // 설정 설명
+  pattern?: string;                    // 단일 정규식 패턴
+  patterns?: string[];                 // 다중 정규식 패턴 (예정)
+  preset?: "gitflow" | "jira";         // 프리셋 패턴 (기본값: "gitflow")
+  description?: string;                // 설정 설명
 }
 ```
 

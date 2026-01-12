@@ -8,6 +8,11 @@ import { loadConfig, type Config } from "./load-config";
 const SUCCESS_CODE = 0;
 const FAILED_CODE = 1;
 
+const PRESET_EXAMPLES = {
+  gitflow: ["feature/login", "fix/bug-123", "hotfix/security", "release/v1.0.0"],
+  jira: ["FEATURE-123", "BUG-456", "STORY-789", "TASK-101"],
+} as const;
+
 const program = new Command();
 
 program
@@ -65,6 +70,11 @@ async function main() {
     } else {
       console.error(chalk.red.bold("✗ Invalid branch name\n"));
       console.error(chalk.yellow(result.error));
+      console.error(chalk.gray("\nExamples of valid branch names:"));
+      for (const example of PRESET_EXAMPLES[preset]) {
+        console.error(chalk.green(`  • ${example}`));
+      }
+      console.error();
       process.exit(FAILED_CODE);
     }
   } catch (error) {
