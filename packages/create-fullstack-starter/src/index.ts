@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { input } from "@inquirer/prompts";
+import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
 import tiged from "tiged";
@@ -19,23 +19,27 @@ program
   });
 
 async function main(directory?: string) {
-  console.log(
-    chalk.cyan.bold("\n  Fullstack Starter - Production-ready fullstack monorepo template\n"),
-  );
+  p.intro(chalk.cyan.bold("Fullstack Starter - Production-ready fullstack monorepo template"));
 
   let targetDir = directory;
 
   if (!targetDir) {
-    targetDir = await input({
+    const result = await p.text({
       message: "Project directory:",
-      default: ".",
+      placeholder: ".",
       validate: (value) => {
         if (!value.trim()) {
           return "Directory name cannot be empty";
         }
-        return true;
       },
     });
+
+    if (p.isCancel(result)) {
+      p.cancel("Operation cancelled.");
+      process.exit(0);
+    }
+
+    targetDir = result || ".";
   }
 
   const resolvedPath = path.resolve(process.cwd(), targetDir);
@@ -46,12 +50,13 @@ async function main(directory?: string) {
     const hasFiles = files.filter((f) => !f.startsWith(".")).length > 0;
 
     if (hasFiles && !isCurrentDir) {
-      console.error(chalk.red(`\n  Error: Directory "${targetDir}" is not empty.\n`));
+      p.cancel(`Directory "${targetDir}" is not empty.`);
       process.exit(1);
     }
   }
 
-  console.log(chalk.gray(`  Cloning template from ${TEMPLATE_REPO}...\n`));
+  const s = p.spinner();
+  s.start(`Cloning template from ${TEMPLATE_REPO}...`);
 
   try {
     const emitter = tiged(TEMPLATE_REPO, {
@@ -60,34 +65,31 @@ async function main(directory?: string) {
       verbose: false,
     });
 
-    emitter.on("info", (info) => {
-      if (info.code === "SUCCESS") {
-        console.log(chalk.green(`  ${info.message}`));
-      }
-    });
-
     await emitter.clone(resolvedPath);
+    s.stop("Template cloned successfully!");
 
-    console.log(chalk.green.bold("\n  Success! Your project is ready.\n"));
-    console.log(chalk.white("  Next steps:\n"));
-
-    if (!isCurrentDir) {
-      console.log(chalk.cyan(`    cd ${targetDir}`));
-    }
-
-    console.log(chalk.cyan("    mise install        # Install runtimes"));
-    console.log(chalk.cyan("    mise run install    # Install dependencies"));
-    console.log(chalk.cyan("    mise infra:up       # Start local infrastructure"));
-    console.log(chalk.cyan("    mise dev            # Start development servers\n"));
-
-    console.log(chalk.gray("  Documentation: https://github.com/first-fluke/fullstack-starter\n"));
-    console.log(chalk.gray("  If you like this template, please leave a star:\n"));
-    console.log(
-      chalk.gray("    gh api --method PUT /user/starred/first-fluke/fullstack-starter\n"),
+    p.note(
+      [
+        !isCurrentDir && chalk.cyan(`cd ${targetDir}`),
+        chalk.cyan("mise install        # Install runtimes"),
+        chalk.cyan("mise run install    # Install dependencies"),
+        chalk.cyan("mise infra:up       # Start local infrastructure"),
+        chalk.cyan("mise dev            # Start development servers"),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      "Next steps",
     );
+
+    p.log.info(chalk.gray("Documentation: https://github.com/first-fluke/fullstack-starter"));
+    p.log.info(chalk.gray("If you like this template, please leave a star:"));
+    p.log.info(chalk.gray("  gh api --method PUT /user/starred/first-fluke/fullstack-starter"));
+
+    p.outro(chalk.green.bold("Your project is ready!"));
   } catch (error) {
+    s.stop("Failed to clone template.");
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(chalk.red(`\n  Error: Failed to clone template.\n  ${message}\n`));
+    p.cancel(message);
     process.exit(1);
   }
 }
