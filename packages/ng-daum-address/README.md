@@ -1,16 +1,18 @@
 # ng-daum-address
 
-Angular 21+를 위한 다음(카카오) 주소 검색 컴포넌트
+Daum (Kakao) Address Search Component for Angular 21+
 
-## 설치
+**English** | [한국어](./README.ko.md)
+
+## Installation
 
 ```bash
 pnpm add @gracefullight/ng-daum-address
 ```
 
-## 사용법
+## Usage
 
-### Standalone Component 임포트
+### Importing Standalone Component
 
 ```typescript
 import { NgDaumAddressComponent } from '@gracefullight/ng-daum-address';
@@ -22,9 +24,9 @@ import { NgDaumAddressComponent } from '@gracefullight/ng-daum-address';
 export class YourComponent {}
 ```
 
-### 템플릿에서 사용
+### Usage in Template
 
-#### Popup 모드 (기본)
+#### Popup Mode (Default)
 
 ```html
 <ng-daum-address
@@ -33,7 +35,7 @@ export class YourComponent {}
 />
 ```
 
-#### Layer 모드
+#### Layer Mode
 
 ```html
 <ng-daum-address
@@ -48,11 +50,11 @@ export class YourComponent {}
   (result)="onAddressSelected($event)"
 />
 <div id="layerTarget" class="layer-container">
-  <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnCloseLayer" alt="닫기" />
+  <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnCloseLayer" alt="Close" />
 </div>
 ```
 
-#### Inline 모드
+#### Inline Mode
 
 ```html
 <ng-daum-address
@@ -64,54 +66,54 @@ export class YourComponent {}
   (result)="onAddressSelected($event)"
 />
 <div id="inlineTarget" class="inline-container">
-  <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap" alt="접기" />
+  <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap" alt="Fold" />
 </div>
 ```
 
-### 컴포넌트에서 처리
+### Handling in Component
 
 ```typescript
 import type { DaumAddressResult } from '@gracefullight/ng-daum-address';
 
 export class YourComponent {
   onAddressSelected(result: DaumAddressResult): void {
-    console.log('우편번호:', result.zipCode);
-    console.log('주소:', result.addr);
-    console.log('영문주소:', result.addrEng);
+    console.log('Zip Code:', result.zipCode);
+    console.log('Address:', result.addr);
+    console.log('Address (English):', result.addrEng);
   }
 }
 ```
 
-## 옵션
+## Options
 
-| 옵션 | 타입 | 기본값 | 설명 |
+| Option | Type | Default | Description |
 |------|------|--------|------|
-| `type` | `'popup' \| 'layer' \| 'inline'` | `'popup'` | 표시 방식 |
-| `class` | `string \| string[]` | - | 버튼 CSS 클래스 |
-| `target` | `string` | - | layer/inline 모드시 타겟 요소 ID |
-| `width` | `number` | `400` | layer 모드시 가로 크기 |
-| `height` | `number` | `500` | layer 모드시 세로 크기 |
-| `border` | `number` | `5` | layer 모드시 테두리 크기 |
-| `buttonText` | `string` | `'주소 검색'` | 버튼 텍스트 |
-| `debug` | `boolean` | `false` | 디버그 모드 활성화 |
+| `type` | `'popup' \| 'layer' \| 'inline'` | `'popup'` | Display mode |
+| `class` | `string \| string[]` | - | CSS class for the button |
+| `target` | `string` | - | Target element ID for layer/inline modes |
+| `width` | `number` | `400` | Width for layer mode |
+| `height` | `number` | `500` | Height for layer mode |
+| `border` | `number` | `5` | Border size for layer mode |
+| `buttonText` | `string` | `'주소 검색'` | Button text (Default: 'Search Address') |
+| `debug` | `boolean` | `false` | Enable debug mode |
 
-## 결과 데이터 (DaumAddressResult)
+## Result Data (DaumAddressResult)
 
-자세한 데이터 구조는 [Daum 우편번호 서비스 가이드](https://postcode.map.daum.net/guide#usage)를 참고하세요.
+For detailed data structure, please refer to the [Daum Postcode Service Guide](https://postcode.map.daum.net/guide#usage).
 
-| 필드 | 타입 | 설명 |
+| Field | Type | Description |
 |------|------|------|
-| `zipCode` | `string` | 우편번호 (5자리) |
-| `addr` | `string` | 전체 주소 (한글) |
-| `addrEng` | `string` | 전체 주소 (영문) |
-| `roadAddress` | `string` | 도로명 주소 |
-| `jibunAddress` | `string` | 지번 주소 |
-| `buildingName` | `string` | 건물명 |
-| `apartment` | `'Y' \| 'N'` | 아파트 여부 |
-| `sido` | `string` | 시도 |
-| `sigungu` | `string` | 시군구 |
-| `bname` | `string` | 법정동/리 |
+| `zipCode` | `string` | Zip Code (5 digits) |
+| `addr` | `string` | Full Address (Korean) |
+| `addrEng` | `string` | Full Address (English) |
+| `roadAddress` | `string` | Road Name Address |
+| `jibunAddress` | `string` | Jibun (Lot Number) Address |
+| `buildingName` | `string` | Building Name |
+| `apartment` | `'Y' \| 'N'` | Apartment status |
+| `sido` | `string` | Sido (Province) |
+| `sigungu` | `string` | Sigungu (City/County/District) |
+| `bname` | `string` | Bname (Beopjeong-dong/Ri) |
 
-## 라이선스
+## License
 
 MIT

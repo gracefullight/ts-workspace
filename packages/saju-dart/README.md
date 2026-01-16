@@ -1,5 +1,7 @@
 # saju
 
+**English** | [한국어](./README.ko.md)
+
 [![pub version](https://img.shields.io/pub/v/saju.svg)](https://pub.dev/packages/saju)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
