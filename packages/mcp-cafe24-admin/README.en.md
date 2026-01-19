@@ -35,17 +35,24 @@
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 24 or higher
 - `CAFE24_MALL_ID` environment variable (required) - Your Cafe24 mall ID
-- `CAFE24_ACCESS_TOKEN` environment variable (required) - Your Cafe24 access token
+- `CAFE24_ACCESS_TOKEN` environment variable (only for direct token, not recommended)
+- **OAuth (recommended)**: `CAFE24_CLIENT_ID`, `CAFE24_CLIENT_SECRET` environment variables (automatic token refresh)
 
 ### Getting Access Token
 
-Cafe24 uses OAuth 2.0 for authentication. Follow these steps:
+Cafe24 uses OAuth 2.0 Bearer tokens. In production, the OAuth server flow is recommended. Direct token usage should be limited to quick testing.
 
-1. Get authentication code from Cafe24 Admin API
-2. Exchange authentication code for access token
-3. Set the token as `CAFE24_ACCESS_TOKEN` environment variable
+#### Option 1: Set Access Token Directly (Not Recommended)
+
+```bash
+export CAFE24_ACCESS_TOKEN=your_access_token_here
+```
+
+#### Option 2: OAuth Automatic Flow (Recommended)
+
+Set `CAFE24_CLIENT_ID` and `CAFE24_CLIENT_SECRET` to enable the OAuth flow. The server will guide you through the authorization URL and handle token refresh.
 
 Refer to [Cafe24 Authentication Documentation](https://developers.cafe24.com/docs/en/api/admin/#authentication) for detailed instructions.
 
@@ -59,6 +66,13 @@ npm install -g mcp-cafe24-admin
 
 ```bash
 export CAFE24_MALL_ID=your_mall_id
+export CAFE24_CLIENT_ID=your_client_id
+export CAFE24_CLIENT_SECRET=your_client_secret
+```
+
+Only when using a direct token:
+
+```bash
 export CAFE24_ACCESS_TOKEN=your_access_token
 ```
 
@@ -66,8 +80,37 @@ Or create a `.env` file:
 
 ```bash
 CAFE24_MALL_ID=your_mall_id
+CAFE24_CLIENT_ID=your_client_id
+CAFE24_CLIENT_SECRET=your_client_secret
+```
+
+Only when using a direct token:
+
+```bash
 CAFE24_ACCESS_TOKEN=your_access_token
 ```
+
+#### OAuth Callback Settings
+
+```bash
+export CAFE24_OAUTH_REDIRECT_BASE_URL=https://mcp-cafe24-admin.vercel.app
+export CAFE24_OAUTH_LOCAL_BRIDGE_URL=http://localhost:8787/cafe24/oauth/callback
+export CAFE24_OAUTH_LISTEN_PORT=8787
+```
+
+The default remote callback path is `/api/auth/callback/cafe24`. Use `CAFE24_OAUTH_REMOTE_PATH` to override it.
+
+#### OAuth Optional Variables
+
+```bash
+export CAFE24_CLIENT_ID=your_client_id
+export CAFE24_CLIENT_SECRET=your_client_secret
+export CAFE24_OAUTH_SCOPE=mall.read_application,mall.write_application
+export CAFE24_OAUTH_STATE=your_state
+export CAFE24_OAUTH_REMOTE_PATH=/api/auth/callback/cafe24
+```
+
+The default `CAFE24_OAUTH_SCOPE` is `mall.read_application,mall.write_application`. To change the local callback path, set `CAFE24_REDIRECT_PATH`.
 
 ## Available Tools
 
@@ -158,21 +201,9 @@ npm start
 
 ## Usage
 
-### With MCP Inspector
+### MCP Client Configuration Example
 
-```bash
-npx @modelcontextprotocol/inspector npx -y @gracefullight/mcp-cafe24-admin
-```
-
-Or if you have the package installed locally:
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js
-```
-
-### With Claude Desktop
-
-Add to your MCP configuration:
+The example below follows Claude Desktop's configuration format. Most MCP clients (e.g., Cursor, Continue, Windsurf, VS Code MCP extensions) accept the same `command`/`args`/`env` structure.
 
 ```json
 {
@@ -182,12 +213,15 @@ Add to your MCP configuration:
       "args": ["-y", "@gracefullight/mcp-cafe24-admin"],
       "env": {
         "CAFE24_MALL_ID": "your_mall_id",
-        "CAFE24_ACCESS_TOKEN": "your_access_token"
+        "CAFE24_CLIENT_ID": "your_client_id",
+        "CAFE24_CLIENT_SECRET": "your_client_secret"
       }
     }
   ]
 }
 ```
+
+Only add `CAFE24_ACCESS_TOKEN` when you are using a direct token.
 
 ## API Coverage
 
@@ -207,12 +241,16 @@ The Cafe24 Admin API uses OAuth 2.0 Bearer tokens. The server automatically adds
 
 The server provides clear, actionable error messages for common scenarios:
 
+- **400 Bad Request** - Invalid request parameters
 - **401 Unauthorized** - Invalid or expired access token
 - **403 Forbidden** - Insufficient permissions
 - **404 Not Found** - Resource not found
+- **409 Conflict** - Resource already exists
 - **422 Unprocessable Entity** - Validation errors
 - **429 Rate Limit** - Too many requests, please wait
 - **500 Internal Server Error** - Temporary error, try again later
+- **503 Service Unavailable** - Server temporarily unavailable
+- **504 Gateway Timeout** - Request timed out
 
 ## License
 

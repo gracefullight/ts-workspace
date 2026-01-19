@@ -35,33 +35,40 @@
 
 ### 필수 조건
 
-- Node.js 18 이상
+- Node.js 24 이상
 - `CAFE24_MALL_ID` 환경 변수 (필수) - Cafe24 몰 ID
-- `CAFE24_ACCESS_TOKEN` 환경 변수 (기존 사용자) 또는 OAuth 인증을 통한 액세스 토큰 발급
-- **새로운 (OAuth)**: `CAFE24_CLIENT_ID`, `CAFE24_CLIENT_SECRET` 환경 변수 (새로운 사용자용)
+- `CAFE24_ACCESS_TOKEN` 환경 변수 (직접 토큰 설정 시 필요, 권장하지 않음)
+- **OAuth (권장)**: `CAFE24_CLIENT_ID`, `CAFE24_CLIENT_SECRET` 환경 변수 (OAuth 자동 갱신 및 로컬 콜백 지원)
 
 ### 액세스 토큰 발급 방법
 
-Cafe24은 OAuth 2.0 Bearer 토큰를 사용합니다. 토큰 만료 시 자동으로 갱신되며, 토큰 관리를 위한 API도 제공합니다.
+Cafe24은 OAuth 2.0 Bearer 토큰을 사용합니다. 운영 환경에서는 OAuth 서버 플로우를 권장하며, 직접 토큰 설정은 테스트용으로만 사용하는 것을 권장합니다.
 
-#### 방법 1: 직접 액세스 토큰 설정 (기존)
+#### 방법 1: 액세스 토큰 직접 설정 (권장하지 않음)
 
 ```bash
 export CAFE24_ACCESS_TOKEN=your_access_token_here
 ```
 
-#### 방법 2: OAuth 자동 인증 (새로운) ⭐ 권장
+#### 방법 2: OAuth 자동 인증 (권장)
 
-`CAFE24_CLIENT_ID`와 `CAFE24_CLIENT_SECRET` 환경 변수를 설정하면, 토큰를 자동으로 관리하고 갱신할 수 있습니다.
+`CAFE24_CLIENT_ID`와 `CAFE24_CLIENT_SECRET` 환경 변수를 설정하면 OAuth 인증을 통해 토큰을 자동으로 가져오고, 만료 시 갱신합니다.
 
 장점:
 - 토큰 만료 시 자동 갱신
-- 별도의 인증 방식 지원
+- 로컬 콜백을 통한 인증 코드 수신
 
 ### 환경 변수
 
 ```bash
 export CAFE24_MALL_ID=your_mall_id
+export CAFE24_CLIENT_ID=your_client_id
+export CAFE24_CLIENT_SECRET=your_client_secret
+```
+
+직접 토큰을 사용할 경우에만:
+
+```bash
 export CAFE24_ACCESS_TOKEN=your_access_token
 ```
 
@@ -69,6 +76,13 @@ export CAFE24_ACCESS_TOKEN=your_access_token
 
 ```bash
 CAFE24_MALL_ID=your_mall_id
+CAFE24_CLIENT_ID=your_client_id
+CAFE24_CLIENT_SECRET=your_client_secret
+```
+
+직접 토큰을 사용할 경우에만:
+
+```bash
 CAFE24_ACCESS_TOKEN=your_access_token
 ```
 
@@ -82,6 +96,19 @@ export CAFE24_OAUTH_LISTEN_PORT=8787
 
 기본 원격 콜백 경로는 `/api/auth/callback/cafe24`입니다. 다른 경로를 쓰려면
 `CAFE24_OAUTH_REMOTE_PATH`로 설정하세요.
+
+#### OAuth 옵션 환경 변수
+
+```bash
+export CAFE24_CLIENT_ID=your_client_id
+export CAFE24_CLIENT_SECRET=your_client_secret
+export CAFE24_OAUTH_SCOPE=mall.read_application,mall.write_application
+export CAFE24_OAUTH_STATE=your_state
+export CAFE24_OAUTH_REMOTE_PATH=/api/auth/callback/cafe24
+```
+
+`CAFE24_OAUTH_SCOPE`의 기본값은 `mall.read_application,mall.write_application`입니다. 로컬 콜백 경로를 바꾸려면
+`CAFE24_REDIRECT_PATH`를 설정하세요.
 
 ## 사용 가능한 도구
 
@@ -172,21 +199,9 @@ npm start
 
 ## 사용법
 
-### MCP Inspector 사용
+### MCP 클라이언트 설정 예시
 
-```bash
-npx @modelcontextprotocol/inspector npx -y @gracefullight/mcp-cafe24-admin
-```
-
-또는 패키지를 로컬에 설치한 경우:
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js
-```
-
-### Claude Desktop 사용
-
-MCP 설정에 추가:
+아래 예시는 Claude Desktop 설정 형식을 기준으로 합니다. 대부분의 MCP 클라이언트(예: Cursor, Continue, Windsurf, VS Code MCP 확장)에서도 같은 `command`/`args`/`env` 구조를 사용합니다.
 
 ```json
 {
@@ -196,12 +211,15 @@ MCP 설정에 추가:
       "args": ["-y", "@gracefullight/mcp-cafe24-admin"],
       "env": {
         "CAFE24_MALL_ID": "your_mall_id",
-        "CAFE24_ACCESS_TOKEN": "your_access_token"
+        "CAFE24_CLIENT_ID": "your_client_id",
+        "CAFE24_CLIENT_SECRET": "your_client_secret"
       }
     }
   ]
 }
 ```
+
+직접 토큰을 사용할 경우에만 `CAFE24_ACCESS_TOKEN`을 추가하세요.
 
 ## API 커버리지
 
@@ -221,12 +239,16 @@ Cafe24 Admin API는 OAuth 2.0 Bearer 토큰을 사용합니다. 서버가 모든
 
 서버는 일반적인 시나리오에 대한 명확하고 조작 가능한 에러 메시지를 제공합니다:
 
+- **400 잘못된 요청** - 잘못된 요청 파라미터
 - **401 인증되지 않음** - 유효하지 않거나 만료된 액세스 토큰
 - **403 금지됨** - 권한 부족 또는 접근 불가
 - **404 찾을 수 없음** - 리소스를 찾을 수 없음
+- **409 충돌** - 리소스가 이미 존재함
 - **422 처리 불가** - 검증 오류
 - **429 속도 제한** - 요청이 너무 많습니다. 잠시 후 다시 시도하세요
 - **500 서버 오류** - 일시적인 오류입니다. 나중에 다시 시도하세요
+- **503 서비스 불가** - 서버가 일시적으로 사용 불가
+- **504 게이트웨이 타임아웃** - 요청이 시간 초과됨
 
 ## 라이선스
 
