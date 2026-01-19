@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const OrdersSearchParamsSchema = z
+const OrdersSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -18,20 +19,20 @@ export const OrdersSearchParamsSchema = z
   })
   .strict();
 
-export const OrderDetailParamsSchema = z
+const OrderDetailParamsSchema = z
   .object({
     order_id: z.string().describe("Order ID"),
   })
   .strict();
 
-export const OrderUpdateStatusParamsSchema = z
+const OrderUpdateStatusParamsSchema = z
   .object({
     order_id: z.string().describe("Order ID"),
     order_status_code: z.string().describe("New order status code"),
   })
   .strict();
 
-export async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchema>) {
+async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/orders", "GET", undefined, {
       limit: params.limit,
@@ -84,20 +85,16 @@ export async function cafe24_list_orders(params: z.infer<typeof OrdersSearchPara
         })),
         has_more: total > params.offset + orders.length,
         ...(total > params.offset + orders.length
-          ? {
-              next_offset: params.offset + orders.length,
-            }
+          ? { next_offset: params.offset + orders.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_get_order(params: z.infer<typeof OrderDetailParamsSchema>) {
+async function cafe24_get_order(params: z.infer<typeof OrderDetailParamsSchema>) {
   try {
     const data = await makeApiRequest(`/admin/orders/${params.order_id}`, "GET");
     const order = data.order || {};
@@ -132,15 +129,11 @@ export async function cafe24_get_order(params: z.infer<typeof OrderDetailParamsS
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_update_order_status(
-  params: z.infer<typeof OrderUpdateStatusParamsSchema>,
-) {
+async function cafe24_update_order_status(params: z.infer<typeof OrderUpdateStatusParamsSchema>) {
   try {
     await makeApiRequest(`/admin/orders/${params.order_id}`, "PUT", {
       order_status_code: params.order_status_code,
@@ -155,8 +148,59 @@ export async function cafe24_update_order_status(
       ],
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_orders",
+    {
+      title: "List Cafe24 Orders",
+      description:
+        "Retrieve a list of orders from Cafe24. Returns order details including order ID, name, status codes, payment status, amount, customer info, and order date. Supports extensive filtering by order ID, date range, and order status code. Paginated results.",
+      inputSchema: OrdersSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_orders,
+  );
+
+  server.registerTool(
+    "cafe24_get_order",
+    {
+      title: "Get Cafe24 Order Details",
+      description:
+        "Retrieve detailed information about a specific order by order ID. Returns complete order details including status, payment info, amount, customer, and order date.",
+      inputSchema: OrderDetailParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_order,
+  );
+
+  server.registerTool(
+    "cafe24_update_order_status",
+    {
+      title: "Update Cafe24 Order Status",
+      description:
+        "Update the status of an existing order in Cafe24. Requires order ID and new status code.",
+      inputSchema: OrderUpdateStatusParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    cafe24_update_order_status,
+  );
 }

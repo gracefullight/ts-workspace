@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafe24 OAuth - Success</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #00c853 0%, #69f0ae 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .icon svg { width: 40px; height: 40px; fill: white; }
+    h1 { color: #1a1a2e; font-size: 24px; margin-bottom: 12px; }
+    p { color: #666; margin-bottom: 32px; line-height: 1.6; }
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 24px 0;
+    }
+    .sponsor-text { color: #888; font-size: 14px; margin-bottom: 16px; }
+    .buttons { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .github-sponsor {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #24292e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .github-sponsor:hover { background: #1a1e22; }
+    .github-sponsor svg { margin-right: 8px; }
+    .coffee-button img { height: 50px; width: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+    </div>
+    <h1>Authorization Successful!</h1>
+    <p>You have successfully authenticated with Cafe24.<br>You can now close this window and return to your application.</p>
+    
+    <div class="divider"></div>
+    
+    <p class="sponsor-text">If you find this project helpful, consider supporting my work!</p>
+    <div class="buttons">
+      <a href="https://github.com/sponsors/gracefullight" target="_blank" rel="noopener noreferrer" class="github-sponsor">
+        <svg height="20" viewBox="0 0 16 16" width="20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Sponsor on GitHub
+      </a>
+      <a href="https://www.buymeacoffee.com/gracefullight" target="_blank" rel="noopener noreferrer" class="coffee-button">
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee">
+      </a>
+    </div>
+  </div>
+</body>
+</html>

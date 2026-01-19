@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const CustomersSearchParamsSchema = z
+const CustomersSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -17,13 +18,13 @@ export const CustomersSearchParamsSchema = z
   })
   .strict();
 
-export const CustomerDetailParamsSchema = z
+const CustomerDetailParamsSchema = z
   .object({
     member_id: z.string().describe("Member ID"),
   })
   .strict();
 
-export async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParamsSchema>) {
+async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/customers", "GET", undefined, {
       limit: params.limit,
@@ -83,7 +84,7 @@ export async function cafe24_list_customers(params: z.infer<typeof CustomersSear
   }
 }
 
-export async function cafe24_get_customer(params: z.infer<typeof CustomerDetailParamsSchema>) {
+async function cafe24_get_customer(params: z.infer<typeof CustomerDetailParamsSchema>) {
   try {
     const data = await makeApiRequest(`/admin/customers/${params.member_id}`, "GET");
     const customer = data.customer || {};
@@ -118,4 +119,40 @@ export async function cafe24_get_customer(params: z.infer<typeof CustomerDetailP
       content: [{ type: "text" as const, text: handleApiError(error) }],
     };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_customers",
+    {
+      title: "List Cafe24 Customers",
+      description:
+        "Retrieve a list of customers from Cafe24. Returns customer details including member ID, name, email, phone, birthdate, gender, join date, and group. Supports pagination and filtering by member ID, email, or name.",
+      inputSchema: CustomersSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_customers,
+  );
+
+  server.registerTool(
+    "cafe24_get_customer",
+    {
+      title: "Get Cafe24 Customer Details",
+      description:
+        "Retrieve detailed information about a specific customer by member ID. Returns complete customer details including personal information and join date.",
+      inputSchema: CustomerDetailParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_customer,
+  );
 }

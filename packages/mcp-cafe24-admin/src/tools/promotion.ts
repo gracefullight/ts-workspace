@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const CouponsSearchParamsSchema = z
+const CouponsSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -15,13 +16,13 @@ export const CouponsSearchParamsSchema = z
   })
   .strict();
 
-export const CouponDetailParamsSchema = z
+const CouponDetailParamsSchema = z
   .object({
     coupon_no: z.string().describe("Coupon number"),
   })
   .strict();
 
-export const CouponCreateParamsSchema = z
+const CouponCreateParamsSchema = z
   .object({
     benefit_no: z.number().describe("Benefit number"),
     coupon_no: z.string().describe("Coupon number"),
@@ -37,7 +38,7 @@ export const CouponCreateParamsSchema = z
   })
   .strict();
 
-export async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSchema>) {
+async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/benefits", "GET", undefined, {
       limit: params.limit,
@@ -57,7 +58,7 @@ export async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchPa
             benefits
               .map(
                 (b: any) =>
-                  `## ${b.benefit_name || "Benefit"}\n` + `- **Benefit No**: ${b.benefit_no}\n`,
+                  `## ${b.benefit_name || "Benefit"}\n- **Benefit No**: ${b.benefit_no}\n`,
               )
               .join(""),
         },
@@ -72,20 +73,16 @@ export async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchPa
         })),
         has_more: total > params.offset + benefits.length,
         ...(total > params.offset + benefits.length
-          ? {
-              next_offset: params.offset + benefits.length,
-            }
+          ? { next_offset: params.offset + benefits.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParamsSchema>) {
+async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParamsSchema>) {
   try {
     const data = await makeApiRequest(`/admin/coupons/${params.coupon_no}`, "GET");
     const coupon = data.coupon || {};
@@ -94,10 +91,7 @@ export async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParam
       content: [
         {
           type: "text" as const,
-          text:
-            `Coupon Details\n\n` +
-            `- **Coupon No**: ${coupon.coupon_no}\n` +
-            `- **Coupon Name**: ${coupon.coupon_name}\n`,
+          text: `Coupon Details\n\n- **Coupon No**: ${coupon.coupon_no}\n- **Coupon Name**: ${coupon.coupon_name}\n`,
         },
       ],
       structuredContent: {
@@ -106,13 +100,11 @@ export async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParam
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_create_coupon(params: z.infer<typeof CouponCreateParamsSchema>) {
+async function cafe24_create_coupon(params: z.infer<typeof CouponCreateParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/coupons", "POST", params);
     const coupon = data.coupon || {};
@@ -121,10 +113,7 @@ export async function cafe24_create_coupon(params: z.infer<typeof CouponCreatePa
       content: [
         {
           type: "text" as const,
-          text:
-            `Coupon created successfully\n\n` +
-            `- **Coupon No**: ${coupon.coupon_no}\n` +
-            `- **Coupon Name**: ${coupon.coupon_name}\n`,
+          text: `Coupon created successfully\n\n- **Coupon No**: ${coupon.coupon_no}\n- **Coupon Name**: ${coupon.coupon_name}\n`,
         },
       ],
       structuredContent: {
@@ -133,8 +122,59 @@ export async function cafe24_create_coupon(params: z.infer<typeof CouponCreatePa
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_coupons",
+    {
+      title: "List Cafe24 Benefits/Coupons",
+      description:
+        "Retrieve a list of benefits/coupons from Cafe24. Returns benefit/coupon details including number, name, and validity period. Supports pagination and filtering by benefit number.",
+      inputSchema: CouponsSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_coupons,
+  );
+
+  server.registerTool(
+    "cafe24_get_coupon",
+    {
+      title: "Get Cafe24 Coupon Details",
+      description:
+        "Retrieve detailed information about a specific coupon by coupon number. Returns complete coupon details including name and validity.",
+      inputSchema: CouponDetailParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_coupon,
+  );
+
+  server.registerTool(
+    "cafe24_create_coupon",
+    {
+      title: "Create Cafe24 Coupon",
+      description:
+        "Create a new coupon/benefit in Cafe24. Requires benefit number, coupon number, type, name, validity period, discount value, and optionally issuance limit.",
+      inputSchema: CouponCreateParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    cafe24_create_coupon,
+  );
 }

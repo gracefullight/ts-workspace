@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const BoardsSearchParamsSchema = z
+const BoardsSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -15,13 +16,13 @@ export const BoardsSearchParamsSchema = z
   })
   .strict();
 
-export const BoardDetailParamsSchema = z
+const BoardDetailParamsSchema = z
   .object({
     board_no: z.number().describe("Board number"),
   })
   .strict();
 
-export async function cafe24_list_boards(params: z.infer<typeof BoardsSearchParamsSchema>) {
+async function cafe24_list_boards(params: z.infer<typeof BoardsSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/boards", "GET", undefined, {
       limit: params.limit,
@@ -74,7 +75,7 @@ export async function cafe24_list_boards(params: z.infer<typeof BoardsSearchPara
   }
 }
 
-export async function cafe24_get_board(params: z.infer<typeof BoardDetailParamsSchema>) {
+async function cafe24_get_board(params: z.infer<typeof BoardDetailParamsSchema>) {
   try {
     const data = await makeApiRequest(`/admin/boards/${params.board_no}`, "GET");
     const board = data.board || {};
@@ -104,4 +105,40 @@ export async function cafe24_get_board(params: z.infer<typeof BoardDetailParamsS
       content: [{ type: "text" as const, text: handleApiError(error) }],
     };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_boards",
+    {
+      title: "List Cafe24 Boards",
+      description:
+        "Retrieve a list of boards from Cafe24. Returns board details including board number, name, type, display status, and usage status. Supports pagination and filtering by board number.",
+      inputSchema: BoardsSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_boards,
+  );
+
+  server.registerTool(
+    "cafe24_get_board",
+    {
+      title: "Get Cafe24 Board Details",
+      description:
+        "Retrieve detailed information about a specific board by board number. Returns complete board details including type and status.",
+      inputSchema: BoardDetailParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_board,
+  );
 }

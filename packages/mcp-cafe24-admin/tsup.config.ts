@@ -11,4 +11,5 @@ export default defineConfig({
   banner: {
     js: "#!/usr/bin/env node",
   },
+  onSuccess: "cp -r src/assets dist/",
 });

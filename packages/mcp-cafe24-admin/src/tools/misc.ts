@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const ThemesSearchParamsSchema = z
+const ThemesSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -14,7 +15,7 @@ export const ThemesSearchParamsSchema = z
   })
   .strict();
 
-export async function cafe24_list_themes(params: z.infer<typeof ThemesSearchParamsSchema>) {
+async function cafe24_list_themes(params: z.infer<typeof ThemesSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/themes", "GET", undefined, {
       limit: params.limit,
@@ -43,20 +44,16 @@ export async function cafe24_list_themes(params: z.infer<typeof ThemesSearchPara
         })),
         has_more: total > params.offset + themes.length,
         ...(total > params.offset + themes.length
-          ? {
-              next_offset: params.offset + themes.length,
-            }
+          ? { next_offset: params.offset + themes.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const SuppliersSearchParamsSchema = z
+const SuppliersSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -69,7 +66,7 @@ export const SuppliersSearchParamsSchema = z
   })
   .strict();
 
-export async function cafe24_list_suppliers(params: z.infer<typeof SuppliersSearchParamsSchema>) {
+async function cafe24_list_suppliers(params: z.infer<typeof SuppliersSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/suppliers", "GET", undefined, {
       limit: params.limit,
@@ -98,20 +95,16 @@ export async function cafe24_list_suppliers(params: z.infer<typeof SuppliersSear
         })),
         has_more: total > params.offset + suppliers.length,
         ...(total > params.offset + suppliers.length
-          ? {
-              next_offset: params.offset + suppliers.length,
-            }
+          ? { next_offset: params.offset + suppliers.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const SalesSearchParamsSchema = z
+const SalesSearchParamsSchema = z
   .object({
     start_date: z.string().describe("Start date (YYYY-MM-DD)"),
     end_date: z.string().describe("End date (YYYY-MM-DD)"),
@@ -126,7 +119,7 @@ export const SalesSearchParamsSchema = z
   })
   .strict();
 
-export async function cafe24_get_daily_sales(params: z.infer<typeof SalesSearchParamsSchema>) {
+async function cafe24_get_daily_sales(params: z.infer<typeof SalesSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/financials/dailysales", "GET", undefined, {
       start_date: params.start_date,
@@ -145,10 +138,7 @@ export async function cafe24_get_daily_sales(params: z.infer<typeof SalesSearchP
           text:
             `Daily sales from ${params.start_date} to ${params.end_date}\n\n` +
             sales
-              .map(
-                (s: any) =>
-                  `## ${s.date}\n` + `- **Sales**: ${s.sales_count} (${s.sales_amount})\n`,
-              )
+              .map((s: any) => `## ${s.date}\n- **Sales**: ${s.sales_count} (${s.sales_amount})\n`)
               .join(""),
         },
       ],
@@ -163,20 +153,16 @@ export async function cafe24_get_daily_sales(params: z.infer<typeof SalesSearchP
         })),
         has_more: total > params.offset + sales.length,
         ...(total > params.offset + sales.length
-          ? {
-              next_offset: params.offset + sales.length,
-            }
+          ? { next_offset: params.offset + sales.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const MileageSearchParamsSchema = z
+const MileageSearchParamsSchema = z
   .object({
     start_date: z.string().optional().describe("Start date (YYYY-MM-DD)"),
     end_date: z.string().optional().describe("End date (YYYY-MM-DD)"),
@@ -191,7 +177,7 @@ export const MileageSearchParamsSchema = z
   })
   .strict();
 
-export async function cafe24_get_points(params: z.infer<typeof MileageSearchParamsSchema>) {
+async function cafe24_get_points(params: z.infer<typeof MileageSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/points", "GET", undefined, {
       ...(params.start_date ? { start_date: params.start_date } : {}),
@@ -234,15 +220,81 @@ export async function cafe24_get_points(params: z.infer<typeof MileageSearchPara
         })),
         has_more: total > params.offset + points.length,
         ...(total > params.offset + points.length
-          ? {
-              next_offset: params.offset + points.length,
-            }
+          ? { next_offset: params.offset + points.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_themes",
+    {
+      title: "List Cafe24 Themes",
+      description:
+        "Retrieve a list of themes from Cafe24. Returns theme details including theme number and name. Supports pagination.",
+      inputSchema: ThemesSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_themes,
+  );
+
+  server.registerTool(
+    "cafe24_list_suppliers",
+    {
+      title: "List Cafe24 Suppliers",
+      description:
+        "Retrieve a list of suppliers from Cafe24. Returns supplier details including supplier number and name. Supports pagination.",
+      inputSchema: SuppliersSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_suppliers,
+  );
+
+  server.registerTool(
+    "cafe24_get_daily_sales",
+    {
+      title: "Get Cafe24 Daily Sales Report",
+      description:
+        "Retrieve daily sales report from Cafe24. Requires date range and supports pagination. Returns sales count and amount for each day.",
+      inputSchema: SalesSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_daily_sales,
+  );
+
+  server.registerTool(
+    "cafe24_get_points",
+    {
+      title: "Get Cafe24 Points Transactions",
+      description:
+        "Retrieve point/mileage transactions from Cafe24. Requires date range and supports pagination. Returns point details including member ID, type, amount, and date.",
+      inputSchema: MileageSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_points,
+  );
 }

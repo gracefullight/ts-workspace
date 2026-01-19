@@ -46,8 +46,8 @@ export async function makeApiRequest<T = any>(
       );
     }
 
-    // Return the resource part of response
-    return response.data.resource as T;
+    // Return data directly
+    return response.data as T;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;

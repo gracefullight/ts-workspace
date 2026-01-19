@@ -1,22 +1,195 @@
 import http from "node:http";
 import { URL } from "node:url";
+import { exec } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import axios, { type AxiosError } from "axios";
+import { parseISO, isAfter, subMinutes } from "date-fns";
+
+/**
+ * All available Cafe24 OAuth scopes
+ * Use __ALL__ as CAFE24_OAUTH_SCOPE to include all scopes
+ */
+const ALL_SCOPES = [
+  // Category
+  "mall.read_category",
+  "mall.write_category",
+  // Product
+  "mall.read_product",
+  "mall.write_product",
+  // Collection
+  "mall.read_collection",
+  "mall.write_collection",
+  // Supply
+  "mall.read_supply",
+  "mall.write_supply",
+  // Personal
+  "mall.read_personal",
+  "mall.write_personal",
+  // Order
+  "mall.read_order",
+  "mall.write_order",
+  // Community
+  "mall.read_community",
+  "mall.write_community",
+  // Customer
+  "mall.read_customer",
+  "mall.write_customer",
+  // Notification
+  "mall.read_notification",
+  "mall.write_notification",
+  // Store
+  "mall.read_store",
+  "mall.write_store",
+  // Promotion
+  "mall.read_promotion",
+  "mall.write_promotion",
+  // Design
+  "mall.read_design",
+  "mall.write_design",
+  // Application
+  "mall.read_application",
+  "mall.write_application",
+  // Salesreport (read only)
+  "mall.read_salesreport",
+  // Privacy
+  "mall.read_privacy",
+  "mall.write_privacy",
+  // Mileage
+  "mall.read_mileage",
+  "mall.write_mileage",
+  // Shipping
+  "mall.read_shipping",
+  "mall.write_shipping",
+  // Translation
+  "mall.read_translation",
+  "mall.write_translation",
+  // Analytics (read only)
+  "mall.read_analytics",
+] as const;
+
+function openBrowser(url: string) {
+  const start =
+    process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
+  exec(`${start} "${url}"`, (error) => {
+    if (error) {
+      console.error(`Failed to open browser: ${error.message}`);
+    }
+  });
+}
 
 interface OAuthTokenResponse {
   access_token: string;
+  expires_at?: string; // ISO date string e.g., "2021-03-01T14:00:00.000"
   refresh_token?: string;
-  expires_in?: number;
-  expires_at?: number;
+  refresh_token_expires_at?: string; // ISO date string
+  client_id?: string;
+  mall_id?: string;
+  user_id?: string;
+  scopes?: string[];
+  issued_at?: string;
+  shop_no?: string;
+  token_type?: string;
 }
 
 interface TokenData {
   access_token: string;
+  expires_at?: string; // ISO date string
   refresh_token?: string;
-  expires_at?: number;
-  expires_in?: number;
+  refresh_token_expires_at?: string; // ISO date string
+  mall_id?: string;
+  scopes?: string[];
+  issued_at?: string;
 }
 
-// Token storage (in-memory for simplicity)
+// Token storage directory
+const TOKEN_DIR = path.join(os.homedir(), ".cafe24", "tokens");
+
+/**
+ * Get token file path for a specific mall
+ */
+function getTokenFilePath(mallId: string): string {
+  return path.join(TOKEN_DIR, `${mallId}.json`);
+}
+
+/**
+ * Ensure token directory exists
+ */
+function ensureTokenDir(): void {
+  if (!fs.existsSync(TOKEN_DIR)) {
+    fs.mkdirSync(TOKEN_DIR, { recursive: true, mode: 0o700 });
+  }
+}
+
+/**
+ * Load token data from file
+ */
+function loadTokenFromFile(mallId: string): TokenData | null {
+  try {
+    const filePath = getTokenFilePath(mallId);
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    const content = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(content) as TokenData;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save token data to file
+ */
+function saveTokenToFile(mallId: string, data: TokenData): void {
+  try {
+    ensureTokenDir();
+    const filePath = getTokenFilePath(mallId);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), { mode: 0o600 });
+  } catch (error) {
+    console.error(`Failed to save token to file: ${error}`);
+  }
+}
+
+/**
+ * Check if token is expired based on ISO date string
+ * Uses date-fns for reliable date parsing and comparison
+ */
+function isTokenExpiredByDate(expiresAt?: string): boolean {
+  if (!expiresAt) {
+    return true; // No expiration info means assume expired
+  }
+
+  try {
+    const expirationDate = parseISO(expiresAt);
+    const now = new Date();
+
+    // Add 5 minute buffer before actual expiration
+    const bufferedExpiration = subMinutes(expirationDate, 5);
+    return isAfter(now, bufferedExpiration);
+  } catch {
+    return true; // Invalid date format means assume expired
+  }
+}
+
+/**
+ * Check if refresh token is expired
+ * Uses date-fns for reliable date parsing and comparison
+ */
+function isRefreshTokenExpired(refreshTokenExpiresAt?: string): boolean {
+  if (!refreshTokenExpiresAt) {
+    return false; // No expiration info means assume valid
+  }
+
+  try {
+    const expirationDate = parseISO(refreshTokenExpiresAt);
+    return isAfter(new Date(), expirationDate);
+  } catch {
+    return true; // Invalid date format means assume expired
+  }
+}
+
+// In-memory cache
 let tokenData: TokenData | null = null;
 let authorizationCode: string | null = process.env.CAFE24_AUTHORIZATION_CODE ?? null;
 let callbackServer: http.Server | null = null;
@@ -29,16 +202,26 @@ function buildBasicAuthHeader(clientId: string, clientSecret: string): string {
   return `Basic ${encoded}`;
 }
 
-function storeTokenData(data: OAuthTokenResponse, fallbackRefreshToken?: string) {
-  const expiresIn = data.expires_in ?? data.expires_at;
-  const expiresAt = expiresIn ? Math.floor(Date.now() / 1000) + expiresIn : undefined;
-
-  tokenData = {
+function storeTokenData(
+  mallId: string,
+  data: OAuthTokenResponse,
+  fallbackRefreshToken?: string,
+): void {
+  const newTokenData: TokenData = {
     access_token: data.access_token,
+    expires_at: data.expires_at,
     refresh_token: data.refresh_token ?? fallbackRefreshToken,
-    expires_at: expiresAt,
-    expires_in: expiresIn,
+    refresh_token_expires_at: data.refresh_token_expires_at,
+    mall_id: data.mall_id ?? mallId,
+    scopes: data.scopes,
+    issued_at: data.issued_at,
   };
+
+  // Update in-memory cache
+  tokenData = newTokenData;
+
+  // Persist to file
+  saveTokenToFile(mallId, newTokenData);
 }
 
 function resolveCallbackListenPort(): number {
@@ -54,8 +237,13 @@ function resolveCallbackListenPort(): number {
 }
 
 function buildAuthorizeUrl(mallId: string, clientId: string, redirectUri: string): string {
+  const configuredScope = process.env.CAFE24_OAUTH_SCOPE?.trim();
+
+  // Handle __ALL__ reserved word to include all available scopes
   const scope =
-    process.env.CAFE24_OAUTH_SCOPE?.trim() || "mall.read_application,mall.write_application";
+    configuredScope === "__ALL__"
+      ? ALL_SCOPES.join(",")
+      : configuredScope || "mall.read_application,mall.write_application";
 
   const authorizeUrl = new URL(`https://${mallId}.cafe24api.com/api/v2/oauth/authorize`);
   authorizeUrl.searchParams.set("response_type", "code");
@@ -112,6 +300,36 @@ function getLocalBridgeUrl(port: number, redirectPath: string): string {
   return `${baseUrl.replace(/\/$/, "")}${redirectPath}`;
 }
 
+// Assets directory path (relative to dist folder)
+const ASSETS_DIR = path.join(path.dirname(new URL(import.meta.url).pathname), "assets");
+
+/**
+ * Load success HTML page from assets
+ */
+function getSuccessHtml(): string {
+  try {
+    const htmlPath = path.join(ASSETS_DIR, "success.html");
+    return fs.readFileSync(htmlPath, "utf-8");
+  } catch {
+    // Fallback if file not found
+    return `<!DOCTYPE html><html><body><h1>Authorization Successful!</h1><p>You can close this window.</p></body></html>`;
+  }
+}
+
+/**
+ * Load error HTML page from assets and replace placeholder
+ */
+function getErrorHtml(errorMessage: string): string {
+  try {
+    const htmlPath = path.join(ASSETS_DIR, "error.html");
+    const html = fs.readFileSync(htmlPath, "utf-8");
+    return html.replace("{{ERROR_MESSAGE}}", errorMessage);
+  } catch {
+    // Fallback if file not found
+    return `<!DOCTYPE html><html><body><h1>Authorization Failed</h1><p>${errorMessage}</p></body></html>`;
+  }
+}
+
 async function waitForAuthorizationCode(
   mallId: string,
   clientId: string,
@@ -132,21 +350,24 @@ async function waitForAuthorizationCode(
     callbackServer = http.createServer((req, res) => {
       if (!req.url) {
         res.statusCode = 400;
-        res.end("Missing request URL");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(getErrorHtml("Missing request URL"));
         return;
       }
 
       const requestUrl = new URL(req.url, `http://localhost:${port}`);
       if (requestUrl.pathname !== redirectPath) {
         res.statusCode = 404;
-        res.end("Not found");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(getErrorHtml("Not found"));
         return;
       }
 
       const error = requestUrl.searchParams.get("error");
       if (error) {
         res.statusCode = 400;
-        res.end(`Authorization failed: ${error}`);
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(getErrorHtml(`Authorization failed: ${error}`));
         callbackServer?.close();
         callbackServer = null;
         callbackPromise = null;
@@ -157,20 +378,23 @@ async function waitForAuthorizationCode(
       const state = requestUrl.searchParams.get("state");
       if (expectedState && state !== expectedState) {
         res.statusCode = 400;
-        res.end("Invalid state parameter");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(getErrorHtml("Invalid state parameter"));
         return;
       }
 
       const code = requestUrl.searchParams.get("code");
       if (!code) {
         res.statusCode = 400;
-        res.end("Missing authorization code");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(getErrorHtml("Missing authorization code"));
         return;
       }
 
       authorizationCode = code;
       res.statusCode = 200;
-      res.end("Authorization code received. You can close this window.");
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(getSuccessHtml());
 
       callbackServer?.close();
       callbackServer = null;
@@ -181,7 +405,7 @@ async function waitForAuthorizationCode(
     callbackServer.listen(port, () => {
       const localBridgeUrl = getLocalBridgeUrl(port, redirectPath);
       callbackServer?.emit("ready", authorizeUrl);
-      console.log(`Cafe24 OAuth local bridge URL: ${localBridgeUrl}`);
+      console.error(`Cafe24 OAuth local bridge URL: ${localBridgeUrl}`);
 
       setTimeout(
         () => {
@@ -234,7 +458,7 @@ export async function exchangeAuthorizationCode(
     );
 
     const data = response.data as OAuthTokenResponse;
-    storeTokenData(data);
+    storeTokenData(mallId, data);
     authorizationCode = null;
 
     return data;
@@ -270,7 +494,7 @@ export async function refreshToken(
   clientSecret: string,
   refreshTokenValue: string,
 ): Promise<OAuthTokenResponse> {
-  if (!tokenData?.refresh_token) {
+  if (!refreshTokenValue) {
     throw new Error("No refresh token available. Please authenticate using authorization code.");
   }
 
@@ -294,7 +518,7 @@ export async function refreshToken(
     );
 
     const data = response.data as OAuthTokenResponse;
-    storeTokenData(data, refreshTokenValue);
+    storeTokenData(mallId, data, refreshTokenValue);
 
     return data;
   } catch (error) {
@@ -325,94 +549,65 @@ export async function getAccessToken(
     return token;
   }
 
-  // OAuth flow
-  try {
-    const token = process.env.CAFE24_ACCESS_TOKEN;
+  // Check environment variable first
+  const envToken = process.env.CAFE24_ACCESS_TOKEN;
+  if (envToken) {
+    return envToken;
+  }
 
-    if (token) {
-      return token;
+  // Try to load token from file if not in memory
+  if (!tokenData) {
+    tokenData = loadTokenFromFile(mallId);
+    if (tokenData) {
+      console.error(`Loaded token from file for mall: ${mallId}`);
     }
+  }
 
-    if (tokenData?.access_token && !isTokenExpired(tokenData)) {
-      return tokenData.access_token;
-    }
+  // Check if we have a valid (non-expired) access token
+  if (tokenData?.access_token && !isTokenExpiredByDate(tokenData.expires_at)) {
+    console.error(`Using cached access token (expires: ${tokenData.expires_at})`);
+    return tokenData.access_token;
+  }
 
-    if (tokenData?.refresh_token) {
+  // Try to refresh if we have a valid refresh token
+  if (tokenData?.refresh_token && !isRefreshTokenExpired(tokenData.refresh_token_expires_at)) {
+    console.error("Access token expired, refreshing using refresh token...");
+    try {
       const newTokens = await refreshToken(mallId, clientId, clientSecret, tokenData.refresh_token);
       return newTokens.access_token;
+    } catch (error) {
+      console.error("Failed to refresh token, starting new OAuth flow:", error);
+      // Clear invalid token data
+      tokenData = null;
     }
-
-    const localRedirectPath = resolveLocalRedirectPath();
-    const expectedState = process.env.CAFE24_OAUTH_STATE?.trim();
-    if (!authorizeUrl) {
-      const remoteRedirectPath = resolveRemoteRedirectPath(localRedirectPath);
-      const resolvedRedirectUri = await getRedirectUri(remoteRedirectPath);
-      authorizeUrl = buildAuthorizeUrl(mallId, clientId, resolvedRedirectUri);
-      console.log(`Cafe24 OAuth redirect URI: ${resolvedRedirectUri}`);
-      console.log(`Cafe24 OAuth authorize URL: ${authorizeUrl}`);
-    }
-
-    const code = await waitForAuthorizationCode(mallId, clientId, localRedirectPath, expectedState);
-    const finalRedirectUri = redirectUri ?? (await getRedirectUri(localRedirectPath));
-    const tokens = await exchangeAuthorizationCode(
-      mallId,
-      clientId,
-      clientSecret,
-      code,
-      finalRedirectUri,
-    );
-
-    return tokens.access_token;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
-        tokenData = null;
-        authorizationCode = null;
-        const localRedirectPath = resolveLocalRedirectPath();
-        const expectedState = process.env.CAFE24_OAUTH_STATE?.trim();
-        if (!authorizeUrl) {
-          const remoteRedirectPath = resolveRemoteRedirectPath(localRedirectPath);
-          const resolvedRedirectUri = await getRedirectUri(remoteRedirectPath);
-          authorizeUrl = buildAuthorizeUrl(mallId, clientId, resolvedRedirectUri);
-          console.log(`Cafe24 OAuth redirect URI: ${resolvedRedirectUri}`);
-          console.log(`Cafe24 OAuth authorize URL: ${authorizeUrl}`);
-        }
-        const code = await waitForAuthorizationCode(
-          mallId,
-          clientId,
-          localRedirectPath,
-          expectedState,
-        );
-        const finalRedirectUri = redirectUri ?? (await getRedirectUri(localRedirectPath));
-        const newTokens = await exchangeAuthorizationCode(
-          mallId,
-          clientId,
-          clientSecret,
-          code,
-          finalRedirectUri,
-        );
-
-        return newTokens.access_token;
-      }
-    }
-    throw error;
-  }
-}
-
-/**
- * Check if token is expired (simple check)
- */
-function isTokenExpired(data: TokenData | null): boolean {
-  if (!data?.expires_in) {
-    return false;
   }
 
-  const expirationTime = data.expires_in || data.expires_in;
-  const now = Date.now() / 1000; // Convert to seconds
-  const expiresAt = data.expires_at || now + expirationTime;
+  // OAuth flow - need new authorization
+  console.error("No valid token found, starting OAuth authorization flow...");
 
-  return now >= expiresAt;
+  const localRedirectPath = resolveLocalRedirectPath();
+  const expectedState = process.env.CAFE24_OAUTH_STATE?.trim();
+
+  if (!authorizeUrl) {
+    const remoteRedirectPath = resolveRemoteRedirectPath(localRedirectPath);
+    const resolvedRedirectUri = await getRedirectUri(remoteRedirectPath);
+    authorizeUrl = buildAuthorizeUrl(mallId, clientId, resolvedRedirectUri);
+    console.error(`Cafe24 OAuth redirect URI: ${resolvedRedirectUri}`);
+    console.error(`Cafe24 OAuth authorize URL: ${authorizeUrl}`);
+    openBrowser(authorizeUrl);
+  }
+
+  const code = await waitForAuthorizationCode(mallId, clientId, localRedirectPath, expectedState);
+  const finalRedirectUri = redirectUri ?? (await getRedirectUri(localRedirectPath));
+  const tokens = await exchangeAuthorizationCode(
+    mallId,
+    clientId,
+    clientSecret,
+    code,
+    finalRedirectUri,
+  );
+
+  return tokens.access_token;
 }
 
 /**

@@ -1,7 +1,8 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
-export const ProductsSearchParamsSchema = z
+const ProductsSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -11,40 +12,34 @@ export const ProductsSearchParamsSchema = z
       .default(20)
       .describe("Maximum results to return (1-100)"),
     offset: z.number().int().min(0).default(0).describe("Number of results to skip"),
-    product_no: z
-      .string()
-      .optional()
-      .describe("Filter by specific product number(s), comma-separated"),
+    product_no: z.number().optional().describe("Filter by product number"),
     product_code: z.string().optional().describe("Filter by product code"),
     category_no: z.number().optional().describe("Filter by category number"),
-    price_min: z.number().optional().describe("Minimum price"),
-    price_max: z.number().optional().describe("Maximum price"),
-    selling: z
-      .boolean()
-      .optional()
-      .describe("Filter by selling status (true=for sale, false=not for sale)"),
+    min_price: z.number().optional().describe("Minimum price filter"),
+    max_price: z.number().optional().describe("Maximum price filter"),
+    selling: z.boolean().optional().describe("Filter by selling status"),
     display: z.boolean().optional().describe("Filter by display status"),
   })
   .strict();
 
-export const ProductDetailParamsSchema = z
+const ProductDetailParamsSchema = z
   .object({
     product_no: z.number().describe("Product number"),
   })
   .strict();
 
-export async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsSchema>) {
+async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/products", "GET", undefined, {
       limit: params.limit,
       offset: params.offset,
-      ...(params.product_no ? { product_no: params.product_no.split(",") } : {}),
+      ...(params.product_no ? { product_no: params.product_no } : {}),
       ...(params.product_code ? { product_code: params.product_code } : {}),
       ...(params.category_no ? { category_no: params.category_no } : {}),
-      ...(params.price_min !== undefined ? { price_min: params.price_min } : {}),
-      ...(params.price_max !== undefined ? { price_max: params.price_max } : {}),
-      ...(params.selling !== undefined ? { selling: params.selling } : {}),
-      ...(params.display !== undefined ? { display: params.display } : {}),
+      ...(params.min_price !== undefined ? { min_price: params.min_price } : {}),
+      ...(params.max_price !== undefined ? { max_price: params.max_price } : {}),
+      ...(params.selling !== undefined ? { selling: params.selling ? "T" : "F" } : {}),
+      ...(params.display !== undefined ? { display: params.display ? "T" : "F" } : {}),
     });
 
     const products = data.products || [];
@@ -59,11 +54,7 @@ export async function cafe24_list_products(params: z.infer<typeof ProductsSearch
             products
               .map(
                 (p: any) =>
-                  `## ${p.product_name} (#${p.product_no})\n` +
-                  `- **Product Code**: ${p.product_code || "N/A"}\n` +
-                  `- **Price**: ${p.price} ${data.currency || "KRW"}\n` +
-                  `- **Stock**: ${p.stock}\n` +
-                  `- **Status**: ${p.selling ? "For Sale" : "Not For Sale"} | ${p.display ? "Displayed" : "Hidden"}\n`,
+                  `## ${p.product_name} (${p.product_no})\n- **Code**: ${p.product_code}\n- **Price**: ${p.price}\n- **Stock**: ${p.stock}\n- **Selling**: ${p.selling === "T" ? "Yes" : "No"}\n`,
               )
               .join(""),
         },
@@ -74,29 +65,25 @@ export async function cafe24_list_products(params: z.infer<typeof ProductsSearch
         offset: params.offset,
         products: products.map((p: any) => ({
           id: p.product_no.toString(),
-          name: p.product_name,
           code: p.product_code,
+          name: p.product_name,
           price: p.price,
           stock: p.stock,
-          selling: p.selling,
-          display: p.display,
+          selling: p.selling === "T",
+          display: p.display === "T",
         })),
         has_more: total > params.offset + products.length,
         ...(total > params.offset + products.length
-          ? {
-              next_offset: params.offset + products.length,
-            }
+          ? { next_offset: params.offset + products.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_get_product(params: z.infer<typeof ProductDetailParamsSchema>) {
+async function cafe24_get_product(params: z.infer<typeof ProductDetailParamsSchema>) {
   try {
     const data = await makeApiRequest(`/admin/products/${params.product_no}`, "GET");
     const product = data.product || {};
@@ -108,128 +95,116 @@ export async function cafe24_get_product(params: z.infer<typeof ProductDetailPar
           text:
             `Product Details\n\n` +
             `- **Product No**: ${product.product_no}\n` +
-            `- **Product Name**: ${product.product_name}\n` +
-            `- **Product Code**: ${product.product_code || "N/A"}\n` +
+            `- **Name**: ${product.product_name}\n` +
+            `- **Code**: ${product.product_code}\n` +
             `- **Price**: ${product.price}\n` +
             `- **Stock**: ${product.stock}\n` +
-            `- **Description**: ${product.summary_description || "N/A"}\n` +
-            `- **Status**: ${product.selling ? "For Sale" : "Not For Sale"} | ${product.display ? "Displayed" : "Hidden"}\n`,
+            `- **Selling**: ${product.selling === "T" ? "Yes" : "No"}\n` +
+            `- **Display**: ${product.display === "T" ? "Yes" : "No"}\n`,
         },
       ],
       structuredContent: {
         id: product.product_no.toString(),
-        name: product.product_name,
         code: product.product_code,
+        name: product.product_name,
         price: product.price,
         stock: product.stock,
-        selling: product.selling,
-        display: product.display,
-        description: product.summary_description,
-        created_date: product.created_date,
-        updated_date: product.updated_date,
+        selling: product.selling === "T",
+        display: product.display === "T",
+        description: product.description,
+        detail_description: product.detail_description,
+        selling_date_start: product.selling_date_start,
+        selling_date_end: product.selling_date_end,
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const ProductCreateParamsSchema = z
+const ProductCreateParamsSchema = z
   .object({
     product_name: z.string().min(1).describe("Product name"),
     product_code: z.string().optional().describe("Product code"),
     price: z.number().min(0).describe("Product price"),
-    stock: z.number().min(0).default(0).describe("Stock quantity"),
-    summary_description: z.string().optional().describe("Short summary"),
+    stock: z.number().int().min(0).optional().describe("Stock quantity"),
+    description: z.string().optional().describe("Short description"),
     detail_description: z.string().optional().describe("Detailed description"),
     selling: z.boolean().optional().default(false).describe("Whether product is for sale"),
     display: z.boolean().optional().default(true).describe("Whether to display product"),
   })
   .strict();
 
-export async function cafe24_create_product(params: z.infer<typeof ProductCreateParamsSchema>) {
+async function cafe24_create_product(params: z.infer<typeof ProductCreateParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/products", "POST", params);
+    const requestBody = {
+      ...params,
+      selling: params.selling ? "T" : "F",
+      display: params.display ? "T" : "F",
+    };
+
+    const data = await makeApiRequest("/admin/products", "POST", { product: requestBody });
     const product = data.product || {};
 
     return {
       content: [
         {
           type: "text" as const,
-          text:
-            `Product created successfully\n\n` +
-            `- **Product No**: ${product.product_no}\n` +
-            `- **Product Name**: ${product.product_name}\n` +
-            `- **Product Code**: ${product.product_code || "N/A"}`,
+          text: `Product created successfully: ${product.product_name} (${product.product_no})`,
         },
       ],
-      structuredContent: {
-        id: product.product_no.toString(),
-        name: product.product_name,
-        code: product.product_code,
-      },
+      structuredContent: { id: product.product_no.toString(), name: product.product_name },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const ProductUpdateParamsSchema = ProductCreateParamsSchema.partial().extend({
+const ProductUpdateParamsSchema = ProductCreateParamsSchema.partial().extend({
   product_no: z.number().describe("Product number"),
 });
 
-export async function cafe24_update_product(params: z.infer<typeof ProductUpdateParamsSchema>) {
-  const { product_no, ...updateParams } = params;
-
+async function cafe24_update_product(params: z.infer<typeof ProductUpdateParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/products/${product_no}`, "PUT", updateParams);
+    const { product_no, ...updateParams } = params;
+    const requestBody = {
+      ...updateParams,
+      ...(updateParams.selling !== undefined ? { selling: updateParams.selling ? "T" : "F" } : {}),
+      ...(updateParams.display !== undefined ? { display: updateParams.display ? "T" : "F" } : {}),
+    };
+
+    const data = await makeApiRequest(`/admin/products/${product_no}`, "PUT", {
+      product: requestBody,
+    });
     const product = data.product || {};
 
     return {
       content: [
         {
           type: "text" as const,
-          text:
-            `Product updated successfully\n\n` +
-            `- **Product No**: ${product_no}\n` +
-            `- **Product Name**: ${product.product_name}\n`,
+          text: `Product updated successfully: ${product.product_name} (${product.product_no})`,
         },
       ],
-      structuredContent: {
-        id: product_no.toString(),
-        name: product.product_name,
-      },
+      structuredContent: { id: product.product_no.toString(), name: product.product_name },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export async function cafe24_delete_product(product_no: number) {
+async function cafe24_delete_product(product_no: number) {
   try {
     await makeApiRequest(`/admin/products/${product_no}`, "DELETE");
+
     return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Product #${product_no} deleted successfully`,
-        },
-      ],
+      content: [{ type: "text" as const, text: `Product ${product_no} deleted successfully` }],
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
 }
 
-export const CategoriesSearchParamsSchema = z
+const CategoriesSearchParamsSchema = z
   .object({
     limit: z
       .number()
@@ -243,7 +218,7 @@ export const CategoriesSearchParamsSchema = z
   })
   .strict();
 
-export async function cafe24_list_categories(params: z.infer<typeof CategoriesSearchParamsSchema>) {
+async function cafe24_list_categories(params: z.infer<typeof CategoriesSearchParamsSchema>) {
   try {
     const data = await makeApiRequest("/admin/categories", "GET", undefined, {
       limit: params.limit,
@@ -263,9 +238,7 @@ export async function cafe24_list_categories(params: z.infer<typeof CategoriesSe
             categories
               .map(
                 (c: any) =>
-                  `## ${c.category_name} (Category #${c.category_no})\n` +
-                  `- **Depth**: ${c.depth}\n` +
-                  `- **Parent**: ${c.parent_category_no || "None"}\n`,
+                  `## ${c.category_name} (${c.category_no})\n- **Depth**: ${c.category_depth}\n- **Parent**: ${c.parent_category_no || "None"}\n`,
               )
               .join(""),
         },
@@ -277,20 +250,119 @@ export async function cafe24_list_categories(params: z.infer<typeof CategoriesSe
         categories: categories.map((c: any) => ({
           id: c.category_no.toString(),
           name: c.category_name,
-          depth: c.depth,
-          parent_category_no: c.parent_category_no,
+          depth: c.category_depth,
+          parent_id: c.parent_category_no?.toString() || null,
         })),
         has_more: total > params.offset + categories.length,
         ...(total > params.offset + categories.length
-          ? {
-              next_offset: params.offset + categories.length,
-            }
+          ? { next_offset: params.offset + categories.length }
           : {}),
       },
     };
   } catch (error) {
-    return {
-      content: [{ type: "text" as const, text: handleApiError(error) }],
-    };
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
   }
+}
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_products",
+    {
+      title: "List Cafe24 Products",
+      description:
+        "Retrieve a list of products from Cafe24. Returns product details including product number, name, code, price, stock, and status. Supports extensive filtering by product number, code, category, price range, selling status, and display status. Paginated results.",
+      inputSchema: ProductsSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_products,
+  );
+
+  server.registerTool(
+    "cafe24_get_product",
+    {
+      title: "Get Cafe24 Product Details",
+      description:
+        "Retrieve detailed information about a specific product by product number. Returns complete product details including name, code, price, stock, description, selling status, display status, and dates.",
+      inputSchema: ProductDetailParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_get_product,
+  );
+
+  server.registerTool(
+    "cafe24_create_product",
+    {
+      title: "Create Cafe24 Product",
+      description:
+        "Create a new product in Cafe24. Requires product name and price. Optionally includes product code, stock quantity, descriptions, selling status, and display status.",
+      inputSchema: ProductCreateParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    cafe24_create_product,
+  );
+
+  server.registerTool(
+    "cafe24_update_product",
+    {
+      title: "Update Cafe24 Product",
+      description:
+        "Update an existing product in Cafe24 by product number. Only provided fields will be updated.",
+      inputSchema: ProductUpdateParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    cafe24_update_product,
+  );
+
+  server.registerTool(
+    "cafe24_delete_product",
+    {
+      title: "Delete Cafe24 Product",
+      description: "Delete a product from Cafe24 by product number. This action cannot be undone.",
+      inputSchema: z.object({ product_no: z.number().describe("Product number") }).strict(),
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({ product_no }) => cafe24_delete_product(product_no),
+  );
+
+  server.registerTool(
+    "cafe24_list_categories",
+    {
+      title: "List Cafe24 Product Categories",
+      description:
+        "Retrieve a list of product categories from Cafe24. Returns category details including category number, name, depth, and parent category. Supports pagination and filtering by parent category.",
+      inputSchema: CategoriesSearchParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_categories,
+  );
 }
