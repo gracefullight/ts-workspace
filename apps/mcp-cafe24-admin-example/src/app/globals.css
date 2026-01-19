@@ -1,0 +1,86 @@
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary: #d4d4d8;
+  --accent: #fcd34d;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  text-align: center;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #fff, #a1a1aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+p {
+  color: #a1a1aa;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.github-sponsor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #24292e;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border: 1px solid #333;
+}
+
+.github-sponsor:hover {
+  transform: translateY(-2px);
+  background-color: #2f363d;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.coffee-button img {
+  height: 60px !important;
+  width: 217px !important;
+  transition: transform 0.2s;
+}
+
+.coffee-button:hover img {
+  transform: translateY(-2px) scale(1.02);
+}
