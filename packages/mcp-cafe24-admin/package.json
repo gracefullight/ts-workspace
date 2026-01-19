@@ -1,0 +1,67 @@
+{
+  "name": "@gracefullight/mcp-cafe24-admin",
+  "version": "0.1.0",
+  "description": "MCP server for Cafe24 Admin API - comprehensive integration with all 19 API sections including Store, Product, Order, Customer, Boards, Themes, Promotion, Apps, Category, Collection, Supply, Shipping, Salesreport, Personal, Privacy, Mileage, Notification, Translation, and Analytics",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "mcp-cafe24-admin": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "format": "biome format --write src"
+  },
+  "keywords": [
+    "mcp",
+    "cafe24",
+    "admin",
+    "api",
+    "model-context-protocol",
+    "sdk"
+  ],
+  "author": {
+    "name": "Eunkwang Shin",
+    "email": "gracefullight.dev@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gracefullight/pkgs.git",
+    "directory": "packages/mcp-cafe24-admin"
+  },
+  "homepage": "https://github.com/gracefullight/pkgs/tree/main/packages/mcp-cafe24-admin#readme",
+  "bugs": {
+    "url": "https://github.com/gracefullight/pkgs/issues"
+  },
+  "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/gracefullight"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11",
+    "@types/node": "^24.10.4",
+    "@vitest/coverage-v8": "^4.0.17",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.17"
+  }
+}
