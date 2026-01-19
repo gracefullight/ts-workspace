@@ -1,7 +1,6 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": ".vercel/output"
+  "installCommand": "pnpm --filter mcp-cafe24-admin-example... install --frozen-lockfile",
+  "buildCommand": "pnpm --filter mcp-cafe24-admin-example... run build"
 }
