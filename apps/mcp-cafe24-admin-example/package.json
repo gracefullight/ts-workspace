@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "vercel-build": "pnpm --filter mcp-cafe24-admin-example... install --frozen-lockfile && pnpm --filter mcp-cafe24-admin-example... run build",
     "start": "next start",
     "lint": "next lint"
   },
