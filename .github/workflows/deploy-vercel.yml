@@ -45,19 +45,16 @@ jobs:
         run: |
           npx vercel pull --yes \
             --environment=${{ github.ref_name == 'main' && 'production' || 'preview' }} \
-            --cwd $APP_DIR \
             --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel Build
         run: |
           npx vercel build \
             ${{ github.ref_name == 'main' && '--prod' || '' }} \
-            --cwd $APP_DIR \
             --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel Deploy
         run: |
           npx vercel deploy --prebuilt \
             ${{ github.ref_name == 'main' && '--prod' || '' }} \
-            --cwd $APP_DIR \
             --token=${{ secrets.VERCEL_TOKEN }}
