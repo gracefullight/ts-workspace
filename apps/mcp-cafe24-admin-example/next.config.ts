@@ -1,11 +1,12 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
-const appRoot = __dirname;
+const workspaceRoot = path.join(__dirname, "../..");
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: appRoot,
+  outputFileTracingRoot: workspaceRoot,
   turbopack: {
-    root: appRoot,
+    root: workspaceRoot,
   },
 };
 

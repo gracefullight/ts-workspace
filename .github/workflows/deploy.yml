@@ -37,13 +37,13 @@ jobs:
         run: pnpm -r --filter './packages/*' build
 
       - name: Build all apps
-        run: pnpm -r --filter './apps/*' build
+        run: pnpm -r --filter './apps/*' --filter '!./apps/mcp-cafe24-admin-example' build
 
       - name: Merge all apps to deploy directory
         run: |
           mkdir -p deploy_dist
           
-          pnpm -r --filter './apps/*' exec -- sh -c '
+          pnpm -r --filter './apps/*' --filter '!./apps/mcp-cafe24-admin-example' exec -- sh -c '
             if [ -d "out" ]; then
               app_dir=$(basename $(pwd))
               echo "Copying $app_dir..."
@@ -93,7 +93,7 @@ jobs:
               <ul class="app-list">
           EOF
           
-          pnpm -r --filter './apps/*' exec -- sh -c '
+          pnpm -r --filter './apps/*' --filter '!./apps/mcp-cafe24-admin-example' exec -- sh -c '
             app_name=$(basename $(pwd))
             echo "  <li class=\"app-item\">" >> ../../deploy_dist/index.html
             echo "    <a href=\"/pkgs/${app_name}/\" class=\"app-link\">" >> ../../deploy_dist/index.html
