@@ -16,7 +16,7 @@ async function cafe24_get_tax_manager_setting(_params: z.infer<typeof TaxManager
           text: `## Tax Manager Setting\n\n- **Usage Status**: ${taxmanager.use === "T" ? "Enabled" : "Disabled"}\n`,
         },
       ],
-      structuredContent: taxmanager,
+      structuredContent: taxmanager as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

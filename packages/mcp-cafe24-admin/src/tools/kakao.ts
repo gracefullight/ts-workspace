@@ -138,7 +138,7 @@ async function cafe24_get_kakaosync_setting(params: z.infer<typeof KakaoSyncPara
             `- **Signup Result Page**: ${sync.use_signup_result_page === "T" ? "Redirect" : "Immediate"}\n`,
         },
       ],
-      structuredContent: sync,
+      structuredContent: sync as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -165,7 +165,7 @@ async function cafe24_update_kakaosync_setting(
           text: `KakaoSync settings updated successfully for Shop #${sync.shop_no || 1}`,
         },
       ],
-      structuredContent: sync,
+      structuredContent: sync as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

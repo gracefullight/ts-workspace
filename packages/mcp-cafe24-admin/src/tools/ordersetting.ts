@@ -204,7 +204,7 @@ async function cafe24_get_order_setting(params: z.infer<typeof OrderSettingParam
             `- **Return Fee**: ${order.return_shipping_fee}\n`,
         },
       ],
-      structuredContent: order,
+      structuredContent: order as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -233,7 +233,7 @@ async function cafe24_update_order_setting(params: z.infer<typeof OrderSettingUp
             `- **Auto Stock Recover**: ${order.stock_recover === "T" ? "Basic" : "Individual"}\n`,
         },
       ],
-      structuredContent: order,
+      structuredContent: order as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

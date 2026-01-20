@@ -97,7 +97,7 @@ async function cafe24_get_seo_setting(params: z.infer<typeof SeoSettingsParamsSc
             `- **LLMs Text**: ${seo.llms_text ? "Configured" : "Empty"}\n`,
         },
       ],
-      structuredContent: seo,
+      structuredContent: seo as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -122,7 +122,7 @@ async function cafe24_update_seo_setting(params: z.infer<typeof SeoSettingsUpdat
           text: `SEO settings updated successfully for Shop #${seo.shop_no || 1}`,
         },
       ],
-      structuredContent: seo,
+      structuredContent: seo as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

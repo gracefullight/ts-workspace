@@ -3,6 +3,63 @@ import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 import type { DisplaySetting, TextStyle } from "../types.js";
 
+const MainPropertySchema = z.object({
+  key: z.string().describe("Property key (e.g., product_name)"),
+  name: z.string().optional().describe("Property name text"),
+  display: z.enum(["T", "F"]).optional().describe("Display property"),
+  display_name: z.enum(["T", "F"]).optional().describe("Display property name"),
+  font_type: z
+    .enum(["N", "B", "I", "D"])
+    .optional()
+    .describe("Font type (N: Normal, B: Bold, I: Italic, D: Bold Italic)"),
+  font_size: z.number().int().optional().describe("Font size"),
+  font_color: z.string().optional().describe("Font color"),
+});
+
+const ListMainPropertiesSchema = z
+  .object({
+    shop_no: z.number().int().min(1).optional().default(1).describe("Multi-shop number"),
+    display_group: z.number().int().min(2).optional().default(2).describe("Display group number"),
+  })
+  .strict();
+
+const CreateMainPropertySchema = z
+  .object({
+    shop_no: z.number().int().min(1).optional().default(1).describe("Multi-shop number"),
+    multishop_display_names: z
+      .array(
+        z.object({
+          shop_no: z.number().int(),
+          name: z.string(),
+        }),
+      )
+      .min(1)
+      .describe("Display names for multiple shops"),
+    display: z.enum(["T", "F"]).optional().default("F").describe("Display property"),
+    display_name: z.enum(["T", "F"]).optional().default("T").describe("Display property name"),
+    font_type: z
+      .enum(["N", "B", "I", "D"])
+      .optional()
+      .default("N")
+      .describe("Font type (N: Normal, B: Bold, I: Italic, D: Bold Italic)"),
+    font_size: z.number().int().optional().default(12).describe("Font size"),
+    font_color: z.string().optional().default("#555555").describe("Font color"),
+    exposure_group_type: z
+      .enum(["A", "M"])
+      .optional()
+      .default("A")
+      .describe("Exposure group type (A: All, M: Member)"),
+  })
+  .strict();
+
+const UpdateMainPropertiesSchema = z
+  .object({
+    shop_no: z.number().int().min(1).optional().default(1).describe("Multi-shop number"),
+    display_group: z.number().int().min(2).describe("Display group number"),
+    properties: z.array(MainPropertySchema).describe("List of properties to update"),
+  })
+  .strict();
+
 const MainSettingParamsSchema = z
   .object({
     shop_no: z.number().int().min(1).optional().describe("Multi-shop number (default: 1)"),
@@ -38,6 +95,123 @@ const MainSettingUpdateParamsSchema = z
     ),
   })
   .strict();
+
+async function cafe24_list_main_properties(params: z.infer<typeof ListMainPropertiesSchema>) {
+  try {
+    const { shop_no, ...queryParams } = params;
+    const requestHeaders = shop_no ? { "X-Cafe24-Shop-No": shop_no.toString() } : undefined;
+
+    const data = await makeApiRequest(
+      "/admin/mains/properties",
+      "GET",
+      undefined,
+      queryParams as Record<string, unknown>,
+      requestHeaders,
+    );
+
+    const main = data.main || {};
+    const properties = main.properties || [];
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text:
+            `Found ${properties.length} main properties.\n` +
+            `Display Group: ${main.display_group}\n\n` +
+            properties
+              .map(
+                (p: Record<string, unknown>) =>
+                  `- Key: ${p.key}\n` +
+                  `  Name: ${p.name}\n` +
+                  `  Display: ${p.display === "T" ? "Yes" : "No"}\n` +
+                  `  Display Name: ${p.display_name === "T" ? "Yes" : "No"}\n` +
+                  `  Font: ${p.font_type} / ${p.font_size}px / ${p.font_color}\n`,
+              )
+              .join("\n"),
+        },
+      ],
+      structuredContent: {
+        properties,
+        meta: {
+          shop_no: main.shop_no,
+          display_group: main.display_group,
+        },
+      },
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
+async function cafe24_create_main_property(params: z.infer<typeof CreateMainPropertySchema>) {
+  try {
+    const { shop_no, ...requestBody } = params;
+    const requestHeaders = shop_no ? { "X-Cafe24-Shop-No": shop_no.toString() } : undefined;
+
+    const payload = {
+      request: {
+        property: requestBody,
+      },
+    };
+
+    const data = await makeApiRequest(
+      "/admin/mains/properties",
+      "POST",
+      payload,
+      undefined,
+      requestHeaders,
+    );
+
+    const result = data?.main?.property || {};
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Created custom main property: ${result.key}`,
+        },
+      ],
+      structuredContent: result as unknown as Record<string, unknown>,
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
+async function cafe24_update_main_properties(params: z.infer<typeof UpdateMainPropertiesSchema>) {
+  try {
+    const { shop_no, ...requestBody } = params;
+    const requestHeaders = shop_no ? { "X-Cafe24-Shop-No": shop_no.toString() } : undefined;
+
+    const payload = {
+      shop_no,
+      request: requestBody,
+    };
+
+    const data = await makeApiRequest(
+      "/admin/mains/properties",
+      "PUT",
+      payload,
+      undefined,
+      requestHeaders,
+    );
+
+    const result = data.main || {};
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Updated main properties.\nDisplay Group: ${result.display_group}\nCount: ${result.properties?.length || 0}`,
+        },
+      ],
+      structuredContent: result as unknown as Record<string, unknown>,
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
 
 async function cafe24_get_main_setting(params: z.infer<typeof MainSettingParamsSchema>) {
   try {
@@ -137,6 +311,54 @@ async function cafe24_update_main_setting(params: z.infer<typeof MainSettingUpda
 }
 
 export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_list_main_properties",
+    {
+      title: "List Main Properties",
+      description: "Retrieve main display group properties configurations",
+      inputSchema: ListMainPropertiesSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_main_properties,
+  );
+
+  server.registerTool(
+    "cafe24_create_main_property",
+    {
+      title: "Create Main Property",
+      description: "Create a custom main display group property",
+      inputSchema: CreateMainPropertySchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    },
+    cafe24_create_main_property,
+  );
+
+  server.registerTool(
+    "cafe24_update_main_properties",
+    {
+      title: "Update Main Properties",
+      description: "Update main display group properties configurations",
+      inputSchema: UpdateMainPropertiesSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    },
+    cafe24_update_main_properties,
+  );
+
   server.registerTool(
     "cafe24_get_main_setting",
     {

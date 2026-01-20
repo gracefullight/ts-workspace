@@ -121,7 +121,6 @@ The default `CAFE24_OAUTH_SCOPE` is `mall.read_application,mall.write_applicatio
 | `cafe24_list_users` | List admin users with filtering and pagination |
 | `cafe24_list_shops` | List shops with filtering and pagination |
 | `cafe24_get_store` | Get detailed store information |
-| `cafe24_update_store` | Update store settings |
 
 ### Product Section
 

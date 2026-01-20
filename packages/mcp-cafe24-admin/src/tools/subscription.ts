@@ -161,7 +161,7 @@ async function cafe24_create_subscription_shipment_setting(
           text: `Created subscription shipment setting: ${shipment.subscription_shipments_name} (No: ${shipment.subscription_no})`,
         },
       ],
-      structuredContent: shipment,
+      structuredContent: shipment as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -192,7 +192,7 @@ async function cafe24_update_subscription_shipment_setting(
           text: `Updated subscription shipment setting #${shipment.subscription_no}: ${shipment.subscription_shipments_name}`,
         },
       ],
-      structuredContent: shipment,
+      structuredContent: shipment as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

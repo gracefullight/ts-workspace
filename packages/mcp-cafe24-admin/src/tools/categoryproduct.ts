@@ -192,7 +192,7 @@ async function cafe24_add_category_products(params: z.infer<typeof AddCategoryPr
           text: `Added products to category ${category_no}: ${result.product_no?.join(", ")} (Display Group: ${result.display_group})`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -226,7 +226,7 @@ async function cafe24_update_category_product(params: z.infer<typeof UpdateCateg
           text: `Updated product ${result.product_no} in category ${category_no}. Sequence: ${result.sequence}`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -255,7 +255,7 @@ async function cafe24_remove_category_product(params: z.infer<typeof RemoveCateg
           text: `Removed product ${result.product_no} from category ${category_no} (Display Group: ${result.display_group})`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

@@ -165,7 +165,7 @@ async function cafe24_create_category_property(
           text: `Created custom category property: ${result.key}`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -201,7 +201,7 @@ async function cafe24_update_category_properties(
           text: `Updated category properties.\nDisplay Group: ${result.display_group}\nCount: ${result.properties?.length || 0}`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

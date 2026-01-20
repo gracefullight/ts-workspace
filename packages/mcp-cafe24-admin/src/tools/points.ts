@@ -84,7 +84,7 @@ async function cafe24_get_points_setting(params: z.infer<typeof PointsSettingPar
             `- **Consent Points Amount**: ${point.agree_point}\n`,
         },
       ],
-      structuredContent: point,
+      structuredContent: point as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -109,7 +109,7 @@ async function cafe24_update_points_setting(
           text: `Points settings updated for Shop #${point.shop_no}`,
         },
       ],
-      structuredContent: point,
+      structuredContent: point as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

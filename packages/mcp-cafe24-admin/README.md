@@ -119,7 +119,6 @@ export CAFE24_OAUTH_REMOTE_PATH=/api/auth/callback/cafe24
 | `cafe24_list_users` | 관리자 목록 조회 (필터링, 페이지네이션 지원) |
 | `cafe24_list_shops` | 상점 목록 조회 (필터링, 페이지네이션 지원) |
 | `cafe24_get_store` | 상점 상세 정보 조회 |
-| `cafe24_update_store` | 상점 설정 업데이트 |
 
 ### Product 섹션
 

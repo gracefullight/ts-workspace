@@ -77,7 +77,7 @@ async function cafe24_list_main_products(params: z.infer<typeof ListMainProducts
               : "No products found."),
         },
       ],
-      structuredContent: products,
+      structuredContent: products as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -107,7 +107,7 @@ async function cafe24_count_main_products(params: z.infer<typeof CountMainProduc
           }): ${data.count ?? 0}`,
         },
       ],
-      structuredContent: { count: data.count } as { count: number },
+      structuredContent: { count: data.count } as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -138,7 +138,7 @@ async function cafe24_add_main_products(params: z.infer<typeof AddMainProductsPa
           text: `Added products to Main Group ${params.display_group} (Shop: ${result.shop_no}).\nAPI Response Product IDs: ${JSON.stringify(result.product_no)}`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -170,7 +170,7 @@ async function cafe24_update_main_products(params: z.infer<typeof UpdateMainProd
           text: `Updated products in Main Group ${params.display_group} (Shop: ${result.shop_no}).\nAPI Response Product IDs: ${JSON.stringify(result.product_no)}`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -207,7 +207,7 @@ async function cafe24_delete_main_product(params: z.infer<typeof DeleteMainProdu
           text: `Removed product ${params.product_no} from Main Group ${params.display_group} (Shop: ${result.shop_no}).`,
         },
       ],
-      structuredContent: result,
+      structuredContent: result as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

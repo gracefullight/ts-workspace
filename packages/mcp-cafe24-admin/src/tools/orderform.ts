@@ -74,7 +74,7 @@ async function cafe24_get_orderform_setting(params: z.infer<typeof SettingsParam
             `- **Quick Signup**: ${settings.quick_signup === "T" ? "Enabled" : "Disabled"}\n`,
         },
       ],
-      structuredContent: settings,
+      structuredContent: settings as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -97,7 +97,7 @@ async function cafe24_update_orderform_setting(params: z.infer<typeof UpdateSett
           text: `Order form settings updated for Shop #${settings.shop_no}`,
         },
       ],
-      structuredContent: settings,
+      structuredContent: settings as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

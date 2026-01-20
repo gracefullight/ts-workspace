@@ -76,7 +76,7 @@ async function cafe24_get_shop(params: z.infer<typeof ShopDetailParamsSchema>) {
             `- **Translation**: ${shop.use_translation === "T" ? "Enabled" : "Disabled"}\n`,
         },
       ],
-      structuredContent: shop,
+      structuredContent: shop as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };

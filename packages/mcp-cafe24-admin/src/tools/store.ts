@@ -235,30 +235,6 @@ async function cafe24_get_store(params: z.infer<typeof StoreDetailParamsSchema>)
   }
 }
 
-async function cafe24_update_store(params: z.infer<typeof StoreUpdateParamsSchema>) {
-  try {
-    const data = await makeApiRequest<{ store: Store }>("/admin/store", "PUT", params);
-    const store = data.store || {};
-
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Store updated successfully\n\n- **Mall Name**: ${store.mall_name}\n- **Currency**: ${store.currency_code}\n`,
-        },
-      ],
-      structuredContent: {
-        mall_id: store.mall_id,
-        mall_name: store.mall_name,
-        shop_no: store.shop_no,
-        currency_code: store.currency_code,
-      },
-    };
-  } catch (error) {
-    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
-  }
-}
-
 async function cafe24_get_store_accounts(params: z.infer<typeof StoreAccountsParamsSchema>) {
   try {
     const queryParams: Record<string, unknown> = {};
@@ -368,23 +344,6 @@ export function registerTools(server: McpServer): void {
       },
     },
     cafe24_get_store,
-  );
-
-  server.registerTool(
-    "cafe24_update_store",
-    {
-      title: "Update Cafe24 Store Settings",
-      description:
-        "Update store information including mall name, shop name, and currency code. Only provided fields will be updated.",
-      inputSchema: StoreUpdateParamsSchema,
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: true,
-        openWorldHint: false,
-      },
-    },
-    cafe24_update_store,
   );
 
   server.registerTool(

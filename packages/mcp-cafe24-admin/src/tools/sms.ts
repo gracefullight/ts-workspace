@@ -25,7 +25,7 @@ async function cafe24_get_sms_setting(params: z.infer<typeof SmsParamsSchema>) {
           text: `## SMS Settings\n\n- **Use SMS**: ${sms.use_sms || "N/A"}\n`,
         },
       ],
-      structuredContent: sms,
+      structuredContent: sms as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
