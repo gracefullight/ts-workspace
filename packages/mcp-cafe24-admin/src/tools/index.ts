@@ -29,6 +29,7 @@ import { registerTools as registerMobileTools } from "./mobile.js";
 import { registerTools as registerOrderTools } from "./order.js";
 import { registerTools as registerOrderControlTools } from "./order-control.js";
 import { registerTools as registerOrderFormTools } from "./orderform.js";
+import { registerTools as registerOrderformPropertiesTools } from "./orderform-properties.js";
 import { registerTools as registerOrderSettingTools } from "./ordersetting.js";
 import { registerTools as registerPaymentTools } from "./payment.js";
 import { registerTools as registerPointsTools } from "./points.js";
@@ -98,6 +99,7 @@ export function registerAllTools(server: McpServer): void {
   registerMenuTools(server);
   registerMobileTools(server);
   registerOrderTools(server);
+  registerOrderformPropertiesTools(server);
   registerOrderFormTools(server);
   registerOrderSettingTools(server);
   registerPaymentTools(server);

@@ -11,5 +11,6 @@ export * from "./label.js";
 export * from "./marketing.js";
 export * from "./order.js";
 export * from "./order-control.js";
+export * from "./orderform-properties.js";
 export * from "./product.js";
 export * from "./store.js";
