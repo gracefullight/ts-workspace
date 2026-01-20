@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { AutomessageArgument, AutomessageSetting } from "../types.js";
 
 /**
  * Schema for getting automessage arguments
@@ -47,12 +48,12 @@ async function cafe24_get_automessage_arguments(
   params: z.infer<typeof AutomessageArgumentsParamsSchema>,
 ) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest(
+    const data = await makeApiRequest<{ arguments: AutomessageArgument[] }>(
       "/admin/automessages/arguments",
       "GET",
       undefined,
@@ -70,7 +71,7 @@ async function cafe24_get_automessage_arguments(
             `Found ${args.length} available placeholders:\n\n` +
             args
               .map(
-                (a: any) =>
+                (a) =>
                   `### ${a.name}\n` +
                   `- **Description**: ${a.description}\n` +
                   `- **Sample**: ${a.sample}\n` +
@@ -82,7 +83,7 @@ async function cafe24_get_automessage_arguments(
       ],
       structuredContent: {
         count: args.length,
-        arguments: args.map((a: any) => ({
+        arguments: args.map((a: AutomessageArgument) => ({
           shop_no: a.shop_no,
           name: a.name,
           description: a.description,
@@ -110,14 +111,18 @@ async function cafe24_get_automessage_setting(
   params: z.infer<typeof AutomessageSettingParamsSchema>,
 ) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/automessages/setting", "GET", undefined, queryParams);
-
-    const settings = data.automessages || data;
+    const data = await makeApiRequest<{ automessages: AutomessageSetting } | AutomessageSetting>(
+      "/admin/automessages/setting",
+      "GET",
+      undefined,
+      queryParams,
+    );
+    const settings = (data as any).automessages || data;
 
     const useSmsText = settings.use_sms === "T" ? "Enabled" : "Disabled";
     const useKakaoText = settings.use_kakaoalimtalk === "T" ? "Enabled" : "Disabled";
@@ -166,7 +171,7 @@ async function cafe24_update_automessage_setting(
   params: z.infer<typeof AutomessageSettingUpdateParamsSchema>,
 ) {
   try {
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: params.shop_no ?? 1,
       request: {
         send_method: params.send_method,
@@ -177,9 +182,13 @@ async function cafe24_update_automessage_setting(
       requestBody.request.send_method_push = params.send_method_push;
     }
 
-    const data = await makeApiRequest("/admin/automessages/setting", "PUT", requestBody);
+    const data = await makeApiRequest<{ automessages: AutomessageSetting } | AutomessageSetting>(
+      "/admin/automessages/setting",
+      "PUT",
+      requestBody,
+    );
 
-    const settings = data.automessages || data;
+    const settings = (data as any).automessages || data;
 
     const sendMethodText = settings.send_method === "S" ? "SMS" : "KakaoAlimtalk (SMS fallback)";
     const sendMethodPushText =

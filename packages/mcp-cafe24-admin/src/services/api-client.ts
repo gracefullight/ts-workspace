@@ -17,6 +17,7 @@ export async function makeApiRequest<T = any>(
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   data?: any,
   params?: any,
+  headers?: Record<string, string>,
 ): Promise<T> {
   const baseUrl = getApiBaseUrl();
   const mallId = process.env.CAFE24_MALL_ID;
@@ -35,6 +36,7 @@ export async function makeApiRequest<T = any>(
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        ...headers,
       },
     });
 

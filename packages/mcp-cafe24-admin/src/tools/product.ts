@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Category, Product } from "../types.js";
 
 const ProductsSearchParamsSchema = z
   .object({
@@ -30,17 +31,22 @@ const ProductDetailParamsSchema = z
 
 async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/products", "GET", undefined, {
-      limit: params.limit,
-      offset: params.offset,
-      ...(params.product_no ? { product_no: params.product_no } : {}),
-      ...(params.product_code ? { product_code: params.product_code } : {}),
-      ...(params.category_no ? { category_no: params.category_no } : {}),
-      ...(params.min_price !== undefined ? { min_price: params.min_price } : {}),
-      ...(params.max_price !== undefined ? { max_price: params.max_price } : {}),
-      ...(params.selling !== undefined ? { selling: params.selling ? "T" : "F" } : {}),
-      ...(params.display !== undefined ? { display: params.display ? "T" : "F" } : {}),
-    });
+    const data = await makeApiRequest<{ products: Product[]; total: number }>(
+      "/admin/products",
+      "GET",
+      undefined,
+      {
+        limit: params.limit,
+        offset: params.offset,
+        ...(params.product_no ? { product_no: params.product_no } : {}),
+        ...(params.product_code ? { product_code: params.product_code } : {}),
+        ...(params.category_no ? { category_no: params.category_no } : {}),
+        ...(params.min_price !== undefined ? { min_price: params.min_price } : {}),
+        ...(params.max_price !== undefined ? { max_price: params.max_price } : {}),
+        ...(params.selling !== undefined ? { selling: params.selling ? "T" : "F" } : {}),
+        ...(params.display !== undefined ? { display: params.display ? "T" : "F" } : {}),
+      },
+    );
 
     const products = data.products || [];
     const total = data.total || 0;
@@ -53,7 +59,7 @@ async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsS
             `Found ${total} products (showing ${products.length})\n\n` +
             products
               .map(
-                (p: any) =>
+                (p) =>
                   `## ${p.product_name} (${p.product_no})\n- **Code**: ${p.product_code}\n- **Price**: ${p.price}\n- **Stock**: ${p.stock}\n- **Selling**: ${p.selling === "T" ? "Yes" : "No"}\n`,
               )
               .join(""),
@@ -63,7 +69,7 @@ async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsS
         total,
         count: products.length,
         offset: params.offset,
-        products: products.map((p: any) => ({
+        products: products.map((p) => ({
           id: p.product_no.toString(),
           code: p.product_code,
           name: p.product_name,
@@ -85,7 +91,10 @@ async function cafe24_list_products(params: z.infer<typeof ProductsSearchParamsS
 
 async function cafe24_get_product(params: z.infer<typeof ProductDetailParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/products/${params.product_no}`, "GET");
+    const data = await makeApiRequest<{ product: Product }>(
+      `/admin/products/${params.product_no}`,
+      "GET",
+    );
     const product = data.product || {};
 
     return {
@@ -143,7 +152,9 @@ async function cafe24_create_product(params: z.infer<typeof ProductCreateParamsS
       display: params.display ? "T" : "F",
     };
 
-    const data = await makeApiRequest("/admin/products", "POST", { product: requestBody });
+    const data = await makeApiRequest<{ product: Product }>("/admin/products", "POST", {
+      product: requestBody,
+    });
     const product = data.product || {};
 
     return {
@@ -173,9 +184,13 @@ async function cafe24_update_product(params: z.infer<typeof ProductUpdateParamsS
       ...(updateParams.display !== undefined ? { display: updateParams.display ? "T" : "F" } : {}),
     };
 
-    const data = await makeApiRequest(`/admin/products/${product_no}`, "PUT", {
-      product: requestBody,
-    });
+    const data = await makeApiRequest<{ product: Product }>(
+      `/admin/products/${product_no}`,
+      "PUT",
+      {
+        product: requestBody,
+      },
+    );
     const product = data.product || {};
 
     return {
@@ -220,11 +235,16 @@ const CategoriesSearchParamsSchema = z
 
 async function cafe24_list_categories(params: z.infer<typeof CategoriesSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/categories", "GET", undefined, {
-      limit: params.limit,
-      offset: params.offset,
-      ...(params.parent_category_no ? { parent_category_no: params.parent_category_no } : {}),
-    });
+    const data = await makeApiRequest<{ categories: Category[]; total: number }>(
+      "/admin/categories",
+      "GET",
+      undefined,
+      {
+        limit: params.limit,
+        offset: params.offset,
+        ...(params.parent_category_no ? { parent_category_no: params.parent_category_no } : {}),
+      },
+    );
 
     const categories = data.categories || [];
     const total = data.total || 0;
@@ -237,7 +257,7 @@ async function cafe24_list_categories(params: z.infer<typeof CategoriesSearchPar
             `Found ${total} categories (showing ${categories.length})\n\n` +
             categories
               .map(
-                (c: any) =>
+                (c) =>
                   `## ${c.category_name} (${c.category_no})\n- **Depth**: ${c.category_depth}\n- **Parent**: ${c.parent_category_no || "None"}\n`,
               )
               .join(""),
@@ -247,7 +267,7 @@ async function cafe24_list_categories(params: z.infer<typeof CategoriesSearchPar
         total,
         count: categories.length,
         offset: params.offset,
-        categories: categories.map((c: any) => ({
+        categories: categories.map((c) => ({
           id: c.category_no.toString(),
           name: c.category_name,
           depth: c.category_depth,

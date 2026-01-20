@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { DisplaySetting, TextStyle } from "../types.js";
 
 const ProductPropertiesParamsSchema = z
   .object({
@@ -43,20 +44,20 @@ async function cafe24_get_product_properties_setting(
   params: z.infer<typeof ProductPropertiesParamsSchema>,
 ) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest(
+    const data = await makeApiRequest<{ product: DisplaySetting } | DisplaySetting>(
       "/admin/products/properties/setting",
       "GET",
       undefined,
       queryParams,
     );
-    const product = data.product || data;
+    const product = (data as any).product || data;
 
-    const formatTextStyle = (style: any) => {
+    const formatTextStyle = (style?: TextStyle) => {
       if (!style) return "N/A";
       return `Use: ${style.use}, Color: ${style.color}, Size: ${style.font_size}, Type: ${style.font_type}`;
     };
@@ -94,13 +95,17 @@ async function cafe24_update_product_properties_setting(
   try {
     const { shop_no, ...settings } = params;
 
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: shop_no ?? 1,
       request: settings,
     };
 
-    const data = await makeApiRequest("/admin/products/properties/setting", "PUT", requestBody);
-    const product = data.product || data;
+    const data = await makeApiRequest<{ product: DisplaySetting } | DisplaySetting>(
+      "/admin/products/properties/setting",
+      "PUT",
+      requestBody,
+    );
+    const product = (data as any).product || data;
 
     return {
       content: [
@@ -113,12 +118,12 @@ async function cafe24_update_product_properties_setting(
         },
       ],
       structuredContent: {
-        shop_no: product.shop_no ?? 1,
-        strikethrough_retail_price: product.strikethrough_retail_price,
-        strikethrough_price: product.strikethrough_price,
-        product_tax_type_text: product.product_tax_type_text,
-        product_discount_price_text: product.product_discount_price_text,
-        optimum_discount_price_text: product.optimum_discount_price_text,
+        shop_no: (product as DisplaySetting).shop_no ?? 1,
+        strikethrough_retail_price: (product as DisplaySetting).strikethrough_retail_price,
+        strikethrough_price: (product as DisplaySetting).strikethrough_price,
+        product_tax_type_text: (product as DisplaySetting).product_tax_type_text,
+        product_discount_price_text: (product as DisplaySetting).product_discount_price_text,
+        optimum_discount_price_text: (product as DisplaySetting).optimum_discount_price_text,
       },
     };
   } catch (error) {

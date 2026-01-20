@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { PrivacyAgreement } from "../types.js";
 
 // --- JOIN ---
 const PrivacyJoinParamsSchema = z
@@ -34,12 +35,17 @@ const PrivacyJoinUpdateParamsSchema = z
 
 async function cafe24_get_privacy_join_setting(params: z.infer<typeof PrivacyJoinParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/privacy/join", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ join: PrivacyAgreement[] }>(
+      "/admin/privacy/join",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const agreements = data.join || [];
 
     const displayMap: Record<string, string> = {
@@ -56,7 +62,7 @@ async function cafe24_get_privacy_join_setting(params: z.infer<typeof PrivacyJoi
             `## Privacy Join Settings (${agreements.length} items)\n\n` +
             agreements
               .map(
-                (item: any) =>
+                (item) =>
                   `### [${item.no}] ${item.name}\n` +
                   `- **Enabled**: ${item.use === "T" ? "Yes" : "No"}\n` +
                   `- **Required**: ${item.required === "T" ? "Yes" : "No"}\n` +
@@ -76,7 +82,7 @@ async function cafe24_get_privacy_join_setting(params: z.infer<typeof PrivacyJoi
       ],
       structuredContent: {
         count: agreements.length,
-        items: agreements.map((item: any) => ({
+        items: agreements.map((item) => ({
           shop_no: item.shop_no,
           no: item.no,
           name: item.name,
@@ -98,12 +104,16 @@ async function cafe24_update_privacy_join_setting(
   try {
     const { shop_no, requests } = params;
 
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: shop_no ?? 1,
       requests,
     };
 
-    const data = await makeApiRequest("/admin/privacy/join", "PUT", requestBody);
+    const data = await makeApiRequest<{ join: PrivacyAgreement[] }>(
+      "/admin/privacy/join",
+      "PUT",
+      requestBody,
+    );
     const agreements = data.join || [];
 
     return {
@@ -114,7 +124,7 @@ async function cafe24_update_privacy_join_setting(
             `## Privacy Join Settings Updated (${agreements.length} items)\n\n` +
             agreements
               .map(
-                (item: any) =>
+                (item) =>
                   `- **[${item.no}] ${item.name}**: ${item.use === "T" ? "Enabled" : "Disabled"}\n`,
               )
               .join(""),
@@ -153,12 +163,17 @@ const PrivacyBoardsUpdateParamsSchema = z
 
 async function cafe24_list_privacy_boards(params: z.infer<typeof PrivacyBoardsParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/privacy/boards", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ boards: PrivacyAgreement[] }>(
+      "/admin/privacy/boards",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const boards = data.boards || [];
 
     return {
@@ -169,7 +184,7 @@ async function cafe24_list_privacy_boards(params: z.infer<typeof PrivacyBoardsPa
             `Found ${boards.length} privacy boards (Shop #${params.shop_no || 1})\n\n` +
             boards
               .map(
-                (b: any) =>
+                (b) =>
                   `## ${b.name} (No: ${b.no})\n` +
                   `- **Use**: ${b.use === "T" ? "Yes" : "No"}\n` +
                   `- **Content**: ${
@@ -181,7 +196,7 @@ async function cafe24_list_privacy_boards(params: z.infer<typeof PrivacyBoardsPa
       ],
       structuredContent: {
         count: boards.length,
-        boards: boards.map((b: any) => ({
+        boards: boards.map((b) => ({
           shop_no: b.shop_no,
           no: b.no,
           name: b.name,
@@ -201,10 +216,14 @@ async function cafe24_update_privacy_boards(
   try {
     const { shop_no, requests } = params;
 
-    const data = await makeApiRequest("/admin/privacy/boards", "PUT", {
-      shop_no,
-      requests,
-    });
+    const data = await makeApiRequest<{ boards: PrivacyAgreement[] }>(
+      "/admin/privacy/boards",
+      "PUT",
+      {
+        shop_no,
+        requests,
+      },
+    );
     const boards = data.boards || [];
 
     return {
@@ -249,12 +268,17 @@ const PrivacyOrdersUpdateParamsSchema = z
 
 async function cafe24_list_privacy_orders(params: z.infer<typeof PrivacyOrdersParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/privacy/orders", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ orders: PrivacyAgreement[] }>(
+      "/admin/privacy/orders",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const orders = data.orders || [];
 
     return {
@@ -265,7 +289,7 @@ async function cafe24_list_privacy_orders(params: z.infer<typeof PrivacyOrdersPa
             `Found ${orders.length} order privacy agreements (Shop #${params.shop_no || 1})\n\n` +
             orders
               .map(
-                (o: any) =>
+                (o) =>
                   `## ${o.name} (No: ${o.no})\n` +
                   `- **Use**: ${o.use === "T" ? "Yes" : "No"}\n` +
                   (o.use_member
@@ -283,7 +307,7 @@ async function cafe24_list_privacy_orders(params: z.infer<typeof PrivacyOrdersPa
       ],
       structuredContent: {
         count: orders.length,
-        orders: orders.map((o: any) => ({
+        orders: orders.map((o) => ({
           shop_no: o.shop_no,
           no: o.no,
           name: o.name,
@@ -304,10 +328,14 @@ async function cafe24_update_privacy_orders(
 ) {
   try {
     const { shop_no, requests } = params;
-    const data = await makeApiRequest("/admin/privacy/orders", "PUT", {
-      shop_no,
-      requests,
-    });
+    const data = await makeApiRequest<{ orders: PrivacyAgreement[] }>(
+      "/admin/privacy/orders",
+      "PUT",
+      {
+        shop_no,
+        requests,
+      },
+    );
     const orders = data.orders || [];
 
     return {

@@ -49,7 +49,6 @@ const StoreDetailParamsSchema = z
 const StoreUpdateParamsSchema = z
   .object({
     mall_name: z.string().optional().describe("Mall name"),
-    shop_name: z.string().optional().describe("Shop name"),
     currency_code: z
       .string()
       .length(3)
@@ -145,7 +144,7 @@ async function cafe24_get_user_detail(params: z.infer<typeof UserDetailParamsSch
             `- **IP Access Restriction**: ${user.ip_access_restriction?.usage === "T" ? "Yes" : "No"}\n`,
         },
       ],
-      structuredContent: user,
+      structuredContent: user as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -229,7 +228,7 @@ async function cafe24_get_store(params: z.infer<typeof StoreDetailParamsSchema>)
             }\n`,
         },
       ],
-      structuredContent: store,
+      structuredContent: store as unknown as Record<string, unknown>,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
@@ -245,11 +244,7 @@ async function cafe24_update_store(params: z.infer<typeof StoreUpdateParamsSchem
       content: [
         {
           type: "text" as const,
-          text:
-            `Store updated successfully\n\n` +
-            `- **Mall Name**: ${store.mall_name}\n` +
-            `- **Shop Name**: ${store.shop_name}\n` +
-            `- **Currency**: ${store.currency_code}\n`,
+          text: `Store updated successfully\n\n- **Mall Name**: ${store.mall_name}\n- **Currency**: ${store.currency_code}\n`,
         },
       ],
       structuredContent: {

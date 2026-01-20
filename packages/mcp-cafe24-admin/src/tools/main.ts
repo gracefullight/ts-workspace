@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { DisplaySetting, TextStyle } from "../types.js";
 
 const MainSettingParamsSchema = z
   .object({
@@ -40,7 +41,7 @@ const MainSettingUpdateParamsSchema = z
 
 async function cafe24_get_main_setting(params: z.infer<typeof MainSettingParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
@@ -51,9 +52,9 @@ async function cafe24_get_main_setting(params: z.infer<typeof MainSettingParamsS
       undefined,
       queryParams,
     );
-    const main = data.main || data;
+    const main = (data as any).main || data;
 
-    const formatStyle = (style: any) => {
+    const formatStyle = (style?: TextStyle) => {
       if (!style) return "N/A";
       const use = style.use === "T" ? "Enabled" : "Disabled";
       const type =
@@ -99,31 +100,35 @@ async function cafe24_update_main_setting(params: z.infer<typeof MainSettingUpda
   try {
     const { shop_no, ...settings } = params;
 
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: shop_no ?? 1,
       request: settings,
     };
 
-    const data = await makeApiRequest("/admin/mains/properties/setting", "PUT", requestBody);
-    const main = data.main || data;
+    const data = await makeApiRequest<{ main: DisplaySetting } | DisplaySetting>(
+      "/admin/mains/properties/setting",
+      "PUT",
+      requestBody,
+    );
+    const main = (data as any).main || data;
 
     return {
       content: [
         {
           type: "text" as const,
           text:
-            `## Main Settings Updated (Shop #${main.shop_no || 1})\n\n` +
-            `- **Strikethrough Retail**: ${main.strikethrough_retail_price === "T" ? "Enabled" : "Disabled"}\n` +
-            `- **Strikethrough Price**: ${main.strikethrough_price === "T" ? "Enabled" : "Disabled"}\n`,
+            `## Main Settings Updated (Shop # ${(main as DisplaySetting).shop_no || 1})\n\n` +
+            `- **Strikethrough Retail**: ${(main as DisplaySetting).strikethrough_retail_price === "T" ? "Enabled" : "Disabled"}\n` +
+            `- **Strikethrough Price**: ${(main as DisplaySetting).strikethrough_price === "T" ? "Enabled" : "Disabled"}\n`,
         },
       ],
       structuredContent: {
-        shop_no: main.shop_no ?? 1,
-        strikethrough_retail_price: main.strikethrough_retail_price,
-        strikethrough_price: main.strikethrough_price,
-        product_tax_type_text: main.product_tax_type_text,
-        product_discount_price_text: main.product_discount_price_text,
-        optimum_discount_price_text: main.optimum_discount_price_text,
+        shop_no: (main as DisplaySetting).shop_no ?? 1,
+        strikethrough_retail_price: (main as DisplaySetting).strikethrough_retail_price,
+        strikethrough_price: (main as DisplaySetting).strikethrough_price,
+        product_tax_type_text: (main as DisplaySetting).product_tax_type_text,
+        product_discount_price_text: (main as DisplaySetting).product_discount_price_text,
+        optimum_discount_price_text: (main as DisplaySetting).optimum_discount_price_text,
       },
     };
   } catch (error) {

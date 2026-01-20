@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Order, OrderStatus } from "../types.js";
 
 const OrdersSearchParamsSchema = z
   .object({
@@ -53,14 +54,19 @@ const OrderStatusUpdateParamsSchema = z
 
 async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/orders", "GET", undefined, {
-      limit: params.limit,
-      offset: params.offset,
-      ...(params.order_id ? { order_id: params.order_id.split(",") } : {}),
-      ...(params.start_date ? { start_date: params.start_date } : {}),
-      ...(params.end_date ? { end_date: params.end_date } : {}),
-      ...(params.order_status_code ? { order_status_code: params.order_status_code } : {}),
-    });
+    const data = await makeApiRequest<{ orders: Order[]; total: number; currency?: string }>(
+      "/admin/orders",
+      "GET",
+      undefined,
+      {
+        limit: params.limit,
+        offset: params.offset,
+        ...(params.order_id ? { order_id: params.order_id.split(",") } : {}),
+        ...(params.start_date ? { start_date: params.start_date } : {}),
+        ...(params.end_date ? { end_date: params.end_date } : {}),
+        ...(params.order_status_code ? { order_status_code: params.order_status_code } : {}),
+      },
+    );
 
     const orders = data.orders || [];
     const total = data.total || 0;
@@ -73,7 +79,7 @@ async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchem
             `Found ${total} orders (showing ${orders.length})\n\n` +
             orders
               .map(
-                (o: any) =>
+                (o) =>
                   `## Order #${o.order_id}\n` +
                   `- **Order Name**: ${o.order_name}\n` +
                   `- **Status**: ${o.order_status_name} (${o.order_status_code})\n` +
@@ -89,7 +95,7 @@ async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchem
         total,
         count: orders.length,
         offset: params.offset,
-        orders: orders.map((o: any) => ({
+        orders: orders.map((o) => ({
           id: o.order_id,
           name: o.order_name,
           status_code: o.order_status_code,
@@ -115,7 +121,7 @@ async function cafe24_list_orders(params: z.infer<typeof OrdersSearchParamsSchem
 
 async function cafe24_get_order(params: z.infer<typeof OrderDetailParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/orders/${params.order_id}`, "GET");
+    const data = await makeApiRequest<{ order: Order }>(`/admin/orders/${params.order_id}`, "GET");
     const order = data.order || {};
 
     return {
@@ -173,9 +179,14 @@ async function cafe24_update_order_status(params: z.infer<typeof OrderUpdateStat
 
 async function cafe24_list_order_statuses(params: z.infer<typeof OrderStatusSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/orders/status", "GET", undefined, {
-      shop_no: params.shop_no,
-    });
+    const data = await makeApiRequest<{ status: OrderStatus[] }>(
+      "/admin/orders/status",
+      "GET",
+      undefined,
+      {
+        shop_no: params.shop_no,
+      },
+    );
     const statuses = data.status || [];
 
     return {
@@ -186,7 +197,7 @@ async function cafe24_list_order_statuses(params: z.infer<typeof OrderStatusSear
             `Found ${statuses.length} order statuses\n\n` +
             statuses
               .map(
-                (s: any) =>
+                (s) =>
                   `## ${s.basic_name} (${s.status_name_id})\n` +
                   `- **Type**: ${s.status_type}\n` +
                   `- **Custom Name**: ${s.custom_name || "N/A"}\n` +
@@ -197,7 +208,7 @@ async function cafe24_list_order_statuses(params: z.infer<typeof OrderStatusSear
       ],
       structuredContent: {
         count: statuses.length,
-        statuses: statuses.map((s: any) => ({
+        statuses: statuses.map((s) => ({
           id: s.status_name_id,
           type: s.status_type,
           basic_name: s.basic_name,
@@ -214,7 +225,7 @@ async function cafe24_list_order_statuses(params: z.infer<typeof OrderStatusSear
 async function cafe24_update_order_statuses(params: z.infer<typeof OrderStatusUpdateParamsSchema>) {
   try {
     const { shop_no, requests } = params;
-    const data = await makeApiRequest("/admin/orders/status", "PUT", {
+    const data = await makeApiRequest<{ status: OrderStatus[] }>("/admin/orders/status", "PUT", {
       shop_no,
       requests,
     });

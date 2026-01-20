@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Shop } from "../types.js";
 
 const ShopListParamsSchema = z.object({}).strict();
 
@@ -12,7 +13,7 @@ const ShopDetailParamsSchema = z
 
 async function cafe24_list_shops() {
   try {
-    const data = await makeApiRequest("/admin/shops", "GET");
+    const data = await makeApiRequest<{ shops: Shop[] }>("/admin/shops", "GET");
     const shops = data.shops || [];
 
     return {
@@ -23,7 +24,7 @@ async function cafe24_list_shops() {
             `## Shop List (${shops.length})\n\n` +
             shops
               .map(
-                (shop: any) =>
+                (shop) =>
                   `### [${shop.shop_no}] ${shop.shop_name} (${shop.default === "T" ? "Default" : "Multi-shop"})\n` +
                   `- **Domain**: ${shop.primary_domain}\n` +
                   `- **Status**: ${shop.active === "T" ? "Active" : "Inactive"}\n` +
@@ -46,7 +47,7 @@ async function cafe24_list_shops() {
 
 async function cafe24_get_shop(params: z.infer<typeof ShopDetailParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/shops/${params.shop_no}`, "GET");
+    const data = await makeApiRequest<{ shop: Shop }>(`/admin/shops/${params.shop_no}`, "GET");
     const shop = data.shop || {};
 
     return {

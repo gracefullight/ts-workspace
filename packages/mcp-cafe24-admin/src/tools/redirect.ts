@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Redirect } from "../types.js";
 
 const RedirectsSearchParamsSchema = z
   .object({
@@ -37,13 +38,18 @@ const RedirectDeleteParamsSchema = z
 
 async function cafe24_list_redirects(params: z.infer<typeof RedirectsSearchParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) queryParams.shop_no = params.shop_no;
     if (params.id) queryParams.id = params.id;
     if (params.path) queryParams.path = params.path;
     if (params.target) queryParams.target = params.target;
 
-    const data = await makeApiRequest("/admin/redirects", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ redirects: Redirect[] }>(
+      "/admin/redirects",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const redirects = data.redirects || [];
 
     return {
@@ -54,7 +60,7 @@ async function cafe24_list_redirects(params: z.infer<typeof RedirectsSearchParam
             `Found ${redirects.length} redirects\n\n` +
             redirects
               .map(
-                (r: any) =>
+                (r) =>
                   `## Redirect #${r.id}\n` +
                   `- **Shop No**: ${r.shop_no}\n` +
                   `- **Path**: ${r.path}\n` +
@@ -65,7 +71,7 @@ async function cafe24_list_redirects(params: z.infer<typeof RedirectsSearchParam
       ],
       structuredContent: {
         count: redirects.length,
-        redirects: redirects.map((r: any) => ({
+        redirects: redirects.map((r) => ({
           shop_no: r.shop_no,
           id: r.id,
           path: r.path,
@@ -89,7 +95,11 @@ async function cafe24_create_redirect(params: z.infer<typeof RedirectCreateParam
       },
     };
 
-    const data = await makeApiRequest("/admin/redirects", "POST", requestBody);
+    const data = await makeApiRequest<{ redirects: Redirect }>(
+      "/admin/redirects",
+      "POST",
+      requestBody,
+    );
     const redirect = data.redirects || {};
 
     return {
@@ -122,7 +132,11 @@ async function cafe24_update_redirect(params: z.infer<typeof RedirectUpdateParam
       },
     };
 
-    const data = await makeApiRequest(`/admin/redirects/${id}`, "PUT", requestBody);
+    const data = await makeApiRequest<{ redirects: Redirect }>(
+      `/admin/redirects/${id}`,
+      "PUT",
+      requestBody,
+    );
     const redirect = data.redirects || {};
 
     return {

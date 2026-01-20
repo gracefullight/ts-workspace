@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Menu } from "../types.js";
 
 const AdminMenusSearchParamsSchema = z
   .object({
@@ -19,7 +20,7 @@ const AdminMenusSearchParamsSchema = z
 
 async function cafe24_list_admin_menus(params: z.infer<typeof AdminMenusSearchParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {
+    const queryParams: Record<string, unknown> = {
       shop_no: params.shop_no,
       mode: params.mode,
     };
@@ -32,7 +33,12 @@ async function cafe24_list_admin_menus(params: z.infer<typeof AdminMenusSearchPa
       queryParams.contains_app_url = params.contains_app_url;
     }
 
-    const data = await makeApiRequest("/admin/menus", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ menus: Menu[] }>(
+      "/admin/menus",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const menus = data.menus || [];
 
     return {
@@ -43,7 +49,7 @@ async function cafe24_list_admin_menus(params: z.infer<typeof AdminMenusSearchPa
             `Found ${menus.length} admin menus\n\n` +
             menus
               .map(
-                (m: any) =>
+                (m) =>
                   `## ${m.name} (${m.menu_no})\n` +
                   `- **Shop No**: ${m.shop_no}\n` +
                   `- **Mode**: ${m.mode}\n` +
@@ -55,7 +61,7 @@ async function cafe24_list_admin_menus(params: z.infer<typeof AdminMenusSearchPa
       ],
       structuredContent: {
         count: menus.length,
-        menus: menus.map((m: any) => ({
+        menus: menus.map((m) => ({
           shop_no: m.shop_no,
           mode: m.mode,
           menu_no: m.menu_no,

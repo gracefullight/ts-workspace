@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Customer, CustomerSetting } from "../types.js";
 
 const CustomersSearchParamsSchema = z
   .object({
@@ -55,13 +56,18 @@ const CustomerSettingUpdateParamsSchema = z
 
 async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/customers", "GET", undefined, {
-      limit: params.limit,
-      offset: params.offset,
-      ...(params.member_id ? { member_id: params.member_id } : {}),
-      ...(params.email ? { email: params.email } : {}),
-      ...(params.name ? { member_name: params.name } : {}),
-    });
+    const data = await makeApiRequest<{ customers: Customer[]; total: number }>(
+      "/admin/customers",
+      "GET",
+      undefined,
+      {
+        limit: params.limit,
+        offset: params.offset,
+        ...(params.member_id ? { member_id: params.member_id } : {}),
+        ...(params.email ? { email: params.email } : {}),
+        ...(params.name ? { member_name: params.name } : {}),
+      },
+    );
 
     const customers = data.customers || [];
     const total = data.total || 0;
@@ -74,7 +80,7 @@ async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParam
             `Found ${total} customers (showing ${customers.length})\n\n` +
             customers
               .map(
-                (c: any) =>
+                (c) =>
                   `## ${c.member_name || c.member_id} (${c.member_id})\n` +
                   `- **Email**: ${c.email}\n` +
                   `- **Phone**: ${c.phone || "N/A"}\n` +
@@ -88,7 +94,7 @@ async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParam
         total,
         count: customers.length,
         offset: params.offset,
-        customers: customers.map((c: any) => ({
+        customers: customers.map((c) => ({
           id: c.member_id,
           name: c.member_name,
           email: c.email,
@@ -115,7 +121,10 @@ async function cafe24_list_customers(params: z.infer<typeof CustomersSearchParam
 
 async function cafe24_get_customer(params: z.infer<typeof CustomerDetailParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/customers/${params.member_id}`, "GET");
+    const data = await makeApiRequest<{ customer: Customer }>(
+      `/admin/customers/${params.member_id}`,
+      "GET",
+    );
     const customer = data.customer || {};
 
     return {
@@ -152,12 +161,17 @@ async function cafe24_get_customer(params: z.infer<typeof CustomerDetailParamsSc
 
 async function cafe24_get_customer_setting(params: z.infer<typeof CustomerSettingParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/customers/setting", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ customer: CustomerSetting }>(
+      "/admin/customers/setting",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const customer = data.customer || data;
 
     const joinFormMap: Record<string, string> = { T: "Basic fields", F: "Detailed fields" };
@@ -219,12 +233,16 @@ async function cafe24_update_customer_setting(
   try {
     const { shop_no, ...settings } = params;
 
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: shop_no ?? 1,
       request: settings,
     };
 
-    const data = await makeApiRequest("/admin/customers/setting", "PUT", requestBody);
+    const data = await makeApiRequest<{ customer: CustomerSetting }>(
+      "/admin/customers/setting",
+      "PUT",
+      requestBody,
+    );
     const customer = data.customer || data;
 
     return {

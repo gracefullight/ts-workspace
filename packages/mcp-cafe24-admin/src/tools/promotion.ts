@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { Benefit, Coupon } from "../types.js";
 
 const CouponsSearchParamsSchema = z
   .object({
@@ -40,11 +41,16 @@ const CouponCreateParamsSchema = z
 
 async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/benefits", "GET", undefined, {
-      limit: params.limit,
-      offset: params.offset,
-      ...(params.benefit_no ? { benefit_no: params.benefit_no } : {}),
-    });
+    const data = await makeApiRequest<{ benefits: Benefit[]; total: number }>(
+      "/admin/benefits",
+      "GET",
+      undefined,
+      {
+        limit: params.limit,
+        offset: params.offset,
+        ...(params.benefit_no ? { benefit_no: params.benefit_no } : {}),
+      },
+    );
 
     const benefits = data.benefits || [];
     const total = data.total || 0;
@@ -56,10 +62,7 @@ async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSch
           text:
             `Found ${total} benefits/coupons (showing ${benefits.length})\n\n` +
             benefits
-              .map(
-                (b: any) =>
-                  `## ${b.benefit_name || "Benefit"}\n- **Benefit No**: ${b.benefit_no}\n`,
-              )
+              .map((b) => `## ${b.benefit_name || "Benefit"}\n- **Benefit No**: ${b.benefit_no}\n`)
               .join(""),
         },
       ],
@@ -67,7 +70,7 @@ async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSch
         total,
         count: benefits.length,
         offset: params.offset,
-        benefits: benefits.map((b: any) => ({
+        benefits: benefits.map((b) => ({
           id: b.benefit_no.toString(),
           name: b.benefit_name,
         })),
@@ -84,7 +87,10 @@ async function cafe24_list_coupons(params: z.infer<typeof CouponsSearchParamsSch
 
 async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParamsSchema>) {
   try {
-    const data = await makeApiRequest(`/admin/coupons/${params.coupon_no}`, "GET");
+    const data = await makeApiRequest<{ coupon: Coupon }>(
+      `/admin/coupons/${params.coupon_no}`,
+      "GET",
+    );
     const coupon = data.coupon || {};
 
     return {
@@ -106,7 +112,7 @@ async function cafe24_get_coupon(params: z.infer<typeof CouponDetailParamsSchema
 
 async function cafe24_create_coupon(params: z.infer<typeof CouponCreateParamsSchema>) {
   try {
-    const data = await makeApiRequest("/admin/coupons", "POST", params);
+    const data = await makeApiRequest<{ coupon: Coupon }>("/admin/coupons", "POST", params);
     const coupon = data.coupon || {};
 
     return {

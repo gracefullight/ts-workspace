@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { StoreInformation } from "../types.js";
 
 const InformationParamsSchema = z
   .object({
@@ -43,12 +44,17 @@ const InformationUpdateParamsSchema = z
 
 async function cafe24_get_information(params: z.infer<typeof InformationParamsSchema>) {
   try {
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, unknown> = {};
     if (params.shop_no) {
       queryParams.shop_no = params.shop_no;
     }
 
-    const data = await makeApiRequest("/admin/information", "GET", undefined, queryParams);
+    const data = await makeApiRequest<{ information: StoreInformation[] }>(
+      "/admin/information",
+      "GET",
+      undefined,
+      queryParams,
+    );
     const informations = data.information || [];
 
     const typeLabels: Record<string, string> = {
@@ -70,7 +76,7 @@ async function cafe24_get_information(params: z.infer<typeof InformationParamsSc
             `## Information Settings (${informations.length} items)\n\n` +
             informations
               .map(
-                (info: any) =>
+                (info) =>
                   `### ${typeLabels[info.type] || info.type}\n` +
                   `- **Type**: ${info.type}\n` +
                   `- **Mobile Display**: ${info.display_mobile === "T" ? "Yes" : info.display_mobile === "F" ? "No" : "N/A"}\n` +
@@ -82,7 +88,7 @@ async function cafe24_get_information(params: z.infer<typeof InformationParamsSc
       ],
       structuredContent: {
         count: informations.length,
-        information: informations.map((info: any) => ({
+        information: informations.map((info) => ({
           shop_no: info.shop_no,
           type: info.type,
           type_label: typeLabels[info.type] || info.type,
@@ -101,12 +107,16 @@ async function cafe24_update_information(params: z.infer<typeof InformationUpdat
   try {
     const { shop_no, requests } = params;
 
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       shop_no: shop_no ?? 1,
       requests,
     };
 
-    const data = await makeApiRequest("/admin/information", "PUT", requestBody);
+    const data = await makeApiRequest<{ information: StoreInformation[] }>(
+      "/admin/information",
+      "PUT",
+      requestBody,
+    );
     const informations = data.information || [];
 
     return {
@@ -116,9 +126,7 @@ async function cafe24_update_information(params: z.infer<typeof InformationUpdat
           text:
             `## Information Updated (${informations.length} items)\n\n` +
             informations
-              .map(
-                (info: any) => `- **${info.type}**: ${info.use === "T" ? "Enabled" : "Updated"}\n`,
-              )
+              .map((info) => `- **${info.type}**: ${info.use === "T" ? "Enabled" : "Updated"}\n`)
               .join(""),
         },
       ],

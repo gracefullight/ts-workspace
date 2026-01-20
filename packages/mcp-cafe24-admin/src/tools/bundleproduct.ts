@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
+import type { BundleProduct, BundleProductComponent } from "../types.js";
 
 const BundleProductComponentSchema = z.object({
   product_no: z.number().int().describe("Product number of the component"),
@@ -180,11 +181,11 @@ async function cafe24_list_bundle_products(
     const { shop_no, ...queryParams } = params;
     const requestHeaders = shop_no ? { "X-Cafe24-Shop-No": shop_no.toString() } : undefined;
 
-    const data = await makeApiRequest(
+    const data = await makeApiRequest<{ bundleproducts: BundleProduct[] }>(
       "/admin/bundleproducts",
       "GET",
       undefined,
-      queryParams as Record<string, any>,
+      queryParams as Record<string, unknown>,
       requestHeaders,
     );
 
@@ -198,7 +199,7 @@ async function cafe24_list_bundle_products(
             `Found ${products.length} bundle products.\n\n` +
             products
               .map(
-                (p: any) =>
+                (p) =>
                   `## ${p.product_name} (${p.product_code})\n` +
                   `- No: ${p.product_no}\n` +
                   `- Display: ${p.display === "T" ? "Yes" : "No"}\n` +
@@ -207,7 +208,10 @@ async function cafe24_list_bundle_products(
                   `- Components: ${
                     p.bundle_product_components
                       ? p.bundle_product_components
-                          .map((c: any) => `${c.product_name} x${c.purchase_quantity}`)
+                          .map(
+                            (c: BundleProductComponent) =>
+                              `${c.product_name} x${c.purchase_quantity}`,
+                          )
                           .join(", ")
                       : "None"
                   }\n`,
@@ -237,7 +241,11 @@ async function cafe24_create_bundle_product(params: z.infer<typeof CreateBundleP
       request: requestBody,
     };
 
-    const data = await makeApiRequest("/admin/bundleproducts", "POST", payload);
+    const data = await makeApiRequest<{ bundleproduct: BundleProduct }>(
+      "/admin/bundleproducts",
+      "POST",
+      payload,
+    );
     const product = data.bundleproduct || {};
 
     return {
@@ -247,7 +255,7 @@ async function cafe24_create_bundle_product(params: z.infer<typeof CreateBundleP
           text: `Created bundle product: ${product.product_name} (No: ${product.product_no}, Code: ${product.product_code})`,
         },
       ],
-      structuredContent: product,
+      structuredContent: product as any,
     };
   } catch (error) {
     return { content: [{ type: "text" as const, text: handleApiError(error) }] };
