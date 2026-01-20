@@ -1,5 +1,6 @@
 export * from "./board.js";
 export * from "./cancellation.js";
+export * from "./cashreceipt.js";
 export * from "./common.js";
 export * from "./customer.js";
 export * from "./marketing.js";
