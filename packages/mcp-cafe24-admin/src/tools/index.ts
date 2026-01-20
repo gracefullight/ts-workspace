@@ -21,6 +21,7 @@ import { registerTools as registerFulfillmentTools } from "./fulfillment.js";
 import { registerTools as registerImageTools } from "./image.js";
 import { registerTools as registerInformationTools } from "./information.js";
 import { registerTools as registerKakaoTools } from "./kakao.js";
+import { registerTools as registerLabelTools } from "./label.js";
 import { registerTools as registerMainTools } from "./main.js";
 import { registerTools as registerMainProductsTools } from "./mainproducts.js";
 import { registerTools as registerMenuTools } from "./menu.js";
@@ -91,6 +92,7 @@ export function registerAllTools(server: McpServer): void {
   registerImageTools(server);
   registerInformationTools(server);
   registerKakaoTools(server);
+  registerLabelTools(server);
   registerMainTools(server);
   registerMainProductsTools(server);
   registerMenuTools(server);
