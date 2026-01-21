@@ -228,4 +228,79 @@ describe("Luxon Adapter", () => {
       expect(adapter.toMillis(seoul)).toBe(adapter.toMillis(utc));
     });
   });
+
+  describe("Hour pillar calculation with timezone (Issue #15 regression)", () => {
+    it("should return local timezone hour, not UTC hour", async () => {
+      const localAdapter = await createLuxonAdapter();
+
+      // 23:00 in Asia/Seoul
+      const seoulTime = DateTime.fromObject(
+        { year: 1990, month: 1, day: 15, hour: 23, minute: 0 },
+        { zone: "Asia/Seoul" },
+      );
+
+      // getHour should return the local timezone hour (23)
+      expect(localAdapter.getHour(seoulTime)).toBe(23);
+    });
+
+    it("should maintain correct hour when timezone is specified", async () => {
+      const localAdapter = await createLuxonAdapter();
+
+      // Test all 12 시진 (2-hour periods) boundaries
+      const hourTests = [
+        { hour: 0, expected: 0 }, // 子時 (23:00-01:00)
+        { hour: 1, expected: 1 }, // 丑時 (01:00-03:00)
+        { hour: 5, expected: 5 }, // 寅時 boundary
+        { hour: 11, expected: 11 }, // 午時 boundary
+        { hour: 12, expected: 12 }, // 午時
+        { hour: 18, expected: 18 }, // 酉時
+        { hour: 22, expected: 22 }, // 亥時
+        { hour: 23, expected: 23 }, // 子時
+      ];
+
+      for (const { hour, expected } of hourTests) {
+        const dt = DateTime.fromObject(
+          { year: 1990, month: 6, day: 15, hour, minute: 30 },
+          { zone: "Asia/Seoul" },
+        );
+        expect(localAdapter.getHour(dt)).toBe(expected);
+      }
+    });
+
+    it("should correctly handle hour across different timezones", async () => {
+      const localAdapter = await createLuxonAdapter();
+
+      // Same instant in different timezones should have different local hours
+      const seoulDt = DateTime.fromObject(
+        { year: 1990, month: 6, day: 15, hour: 14, minute: 0 },
+        { zone: "Asia/Seoul" },
+      );
+
+      const tokyoDt = seoulDt.setZone("Asia/Tokyo");
+      const utcDt = seoulDt.setZone("UTC");
+
+      // Local hours should be different based on timezone
+      expect(localAdapter.getHour(seoulDt)).toBe(14);
+      expect(localAdapter.getHour(tokyoDt)).toBe(14); // Same as Seoul (both UTC+9)
+      expect(localAdapter.getHour(utcDt)).toBe(5); // UTC+0 (14-9=5)
+    });
+
+    it("should return correct hour for zi hour (子時) edge case", async () => {
+      const localAdapter = await createLuxonAdapter();
+
+      // 23:00 should return hour 23 (子時 start)
+      const dt23 = DateTime.fromObject(
+        { year: 1990, month: 1, day: 15, hour: 23, minute: 0 },
+        { zone: "Asia/Seoul" },
+      );
+      expect(localAdapter.getHour(dt23)).toBe(23);
+
+      // 00:30 should return hour 0 (still 子時)
+      const dt0 = DateTime.fromObject(
+        { year: 1990, month: 1, day: 16, hour: 0, minute: 30 },
+        { zone: "Asia/Seoul" },
+      );
+      expect(localAdapter.getHour(dt0)).toBe(0);
+    });
+  });
 });

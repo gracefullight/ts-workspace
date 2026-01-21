@@ -9,7 +9,6 @@ import {
   type StemCombination,
 } from "@gracefullight/saju";
 import { createDateFnsAdapter } from "@gracefullight/saju/adapters/date-fns";
-import { fromZonedTime } from "date-fns-tz";
 import { useAtom, useSetAtom } from "jotai";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -120,9 +119,12 @@ export default function HomePage() {
     try {
       const adapter = await createDateFnsAdapter();
       const birthDateTime = {
-        date: fromZonedTime(
-          new Date(formData.year, formData.month - 1, formData.day, formData.hour, formData.minute),
-          "Asia/Seoul",
+        date: new Date(
+          formData.year,
+          formData.month - 1,
+          formData.day,
+          formData.hour,
+          formData.minute,
         ),
         timeZone: "Asia/Seoul",
       };

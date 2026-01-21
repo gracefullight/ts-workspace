@@ -185,4 +185,70 @@ describe("date-fns Adapter", () => {
       expect(adapter.getZoneName(result)).toBe("Asia/Tokyo");
     });
   });
+
+  describe("Hour pillar calculation with local time (Issue #15 regression)", () => {
+    it("should use local time hours for calculation, not UTC-shifted hours", async () => {
+      const localAdapter = await createDateFnsAdapter();
+
+      // Test case: User inputs 23:00 in Asia/Seoul timezone
+      // The hour pillar should be calculated based on hour 23, not shifted
+      const localDateTime = {
+        date: new Date(1990, 0, 15, 23, 0), // 23:00 local time
+        timeZone: "Asia/Seoul",
+      };
+
+      // getHour should return 23 (the local time), not a UTC-shifted value
+      expect(localAdapter.getHour(localDateTime)).toBe(23);
+    });
+
+    it("should calculate correct hour branch index for zi hour (23:00-01:00)", async () => {
+      const localAdapter = await createDateFnsAdapter();
+
+      // 23:00 should be 子時 (Zi hour, branch index 0)
+      const dt23 = {
+        date: new Date(1990, 0, 15, 23, 0),
+        timeZone: "Asia/Seoul",
+      };
+      expect(localAdapter.getHour(dt23)).toBe(23);
+
+      // 0:30 should also be 子時 (Zi hour, branch index 0)
+      const dt0 = {
+        date: new Date(1990, 0, 15, 0, 30),
+        timeZone: "Asia/Seoul",
+      };
+      expect(localAdapter.getHour(dt0)).toBe(0);
+    });
+
+    it("should not shift hours when timezone metadata is set", async () => {
+      const localAdapter = await createDateFnsAdapter();
+
+      // Create date with specific local hour
+      const hours = [0, 1, 5, 11, 12, 18, 22, 23];
+
+      for (const hour of hours) {
+        const dt = {
+          date: new Date(1990, 5, 15, hour, 30),
+          timeZone: "Asia/Seoul",
+        };
+        expect(localAdapter.getHour(dt)).toBe(hour);
+      }
+    });
+
+    it("should maintain hour consistency across different timezones metadata", async () => {
+      const localAdapter = await createDateFnsAdapter();
+
+      // The same Date object should return same hour regardless of timezone metadata
+      // because date-fns adapter uses Date.getHours() which returns local system time
+      const baseDate = new Date(1990, 5, 15, 14, 0);
+
+      const seoulDt = { date: baseDate, timeZone: "Asia/Seoul" };
+      const tokyoDt = { date: baseDate, timeZone: "Asia/Tokyo" };
+      const utcDt = { date: baseDate, timeZone: "UTC" };
+
+      // All should return 14 because they use the same Date object
+      expect(localAdapter.getHour(seoulDt)).toBe(14);
+      expect(localAdapter.getHour(tokyoDt)).toBe(14);
+      expect(localAdapter.getHour(utcDt)).toBe(14);
+    });
+  });
 });
