@@ -10,6 +10,7 @@ export * from "./cashreceipt.js";
 export * from "./collect-request.js";
 export * from "./common.js";
 export * from "./common-event.js";
+export * from "./coupon.js";
 export * from "./customer.js";
 export * from "./customer-group.js";
 export * from "./customer-memo.js";

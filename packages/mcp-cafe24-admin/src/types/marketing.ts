@@ -3,17 +3,6 @@ export interface Promotion {
   promotion_name: string;
 }
 
-export interface Coupon {
-  coupon_no: string;
-  coupon_name: string;
-  coupon_type?: string;
-  apply_method?: string;
-  valid_start_date?: string;
-  valid_end_date?: string;
-  discount_value?: number;
-  issue_limit?: number;
-}
-
 export interface SocialNaverShoppingSetting {
   shop_no: number;
   mall_id: string;
