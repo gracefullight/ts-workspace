@@ -35,6 +35,8 @@ export interface Cancellation {
       }[]
     | null;
   cancel_fee_amount: string | null;
+  status?: string;
+  recover_inventory?: string;
 }
 
 export interface CancellationItem {

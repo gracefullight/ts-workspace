@@ -7,6 +7,8 @@ import {
   CancellationRequestCreateParamsSchema,
   CancellationRequestRejectParamsSchema,
   CancellationUpdateParamsSchema,
+  OrderCancellationCreateParamsSchema,
+  OrderCancellationUpdateParamsSchema,
 } from "../schemas/cancellation.js";
 import { handleApiError, makeApiRequest } from "../services/api-client.js";
 
@@ -45,10 +47,14 @@ async function cafe24_get_cancellation(params: z.infer<typeof CancellationDetail
 
 async function cafe24_create_cancellation(params: z.infer<typeof CancellationCreateParamsSchema>) {
   try {
-    const data = await makeApiRequest<{ cancellation: any[] }>("/admin/cancellation", "POST", {
-      shop_no: params.shop_no,
-      requests: params.requests,
-    });
+    const data = await makeApiRequest<{ cancellation: Cancellation[] }>(
+      "/admin/cancellation",
+      "POST",
+      {
+        shop_no: params.shop_no,
+        requests: params.requests,
+      },
+    );
     const cancellations = data.cancellation || [];
 
     return {
@@ -69,10 +75,14 @@ async function cafe24_create_cancellation(params: z.infer<typeof CancellationCre
 
 async function cafe24_update_cancellation(params: z.infer<typeof CancellationUpdateParamsSchema>) {
   try {
-    const data = await makeApiRequest<{ cancellation: any[] }>("/admin/cancellation", "PUT", {
-      shop_no: params.shop_no,
-      requests: params.requests,
-    });
+    const data = await makeApiRequest<{ cancellation: Cancellation[] }>(
+      "/admin/cancellation",
+      "PUT",
+      {
+        shop_no: params.shop_no,
+        requests: params.requests,
+      },
+    );
     const cancellations = data.cancellation || [];
 
     return {
@@ -95,7 +105,7 @@ async function cafe24_create_cancellation_request(
   params: z.infer<typeof CancellationRequestCreateParamsSchema>,
 ) {
   try {
-    const data = await makeApiRequest<{ cancellationrequests: any[] }>(
+    const data = await makeApiRequest<{ cancellationrequests: unknown[] }>(
       "/admin/cancellationrequests",
       "POST",
       {
@@ -125,7 +135,7 @@ async function cafe24_reject_cancellation_request(
   params: z.infer<typeof CancellationRequestRejectParamsSchema>,
 ) {
   try {
-    const data = await makeApiRequest<{ cancellationrequests: any[] }>(
+    const data = await makeApiRequest<{ cancellationrequests: unknown[] }>(
       "/admin/cancellationrequests",
       "PUT",
       {
@@ -144,6 +154,75 @@ async function cafe24_reject_cancellation_request(
       ],
       structuredContent: {
         results: requests,
+      },
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
+async function cafe24_create_order_cancellation(
+  params: z.infer<typeof OrderCancellationCreateParamsSchema>,
+) {
+  try {
+    const { order_id, shop_no, request } = params;
+    const data = await makeApiRequest<{ cancellation: Cancellation }>(
+      `/admin/orders/${order_id}/cancellation`,
+      "POST",
+      {
+        shop_no,
+        request,
+      },
+    );
+    const cancellation = data.cancellation;
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text:
+            `Successfully created cancellation for order #${order_id}.\n\n` +
+            `- **Claim Code**: ${cancellation.claim_code}\n` +
+            `- **Status**: ${cancellation.status || "N/A"}\n` +
+            `- **Items**: ${cancellation.items?.length || 0} items canceled.`,
+        },
+      ],
+      structuredContent: {
+        cancellation,
+      },
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
+async function cafe24_update_order_cancellation(
+  params: z.infer<typeof OrderCancellationUpdateParamsSchema>,
+) {
+  try {
+    const { order_id, claim_code, shop_no, request } = params;
+    const data = await makeApiRequest<{ cancellation: Cancellation }>(
+      `/admin/orders/${order_id}/cancellation/${claim_code}`,
+      "PUT",
+      {
+        shop_no,
+        request,
+      },
+    );
+    const cancellation = data.cancellation;
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text:
+            `Successfully updated cancellation #${claim_code} for order #${order_id}.\n\n` +
+            `- **Undone**: ${cancellation.undone === "T" ? "Yes" : "No"}\n` +
+            `- **Recover Inventory**: ${cancellation.recover_inventory === "T" ? "Yes" : "No"}\n`,
+        },
+      ],
+      structuredContent: {
+        cancellation,
       },
     };
   } catch (error) {
@@ -235,5 +314,39 @@ export function registerTools(server: McpServer): void {
       },
     },
     cafe24_reject_cancellation_request,
+  );
+
+  server.registerTool(
+    "cafe24_create_order_cancellation",
+    {
+      title: "Create Cafe24 Order Cancellation (Single)",
+      description:
+        "Create an order cancellation for a specific order by order ID. Can specify cancellation status, reason, items, and refund details.",
+      inputSchema: OrderCancellationCreateParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    cafe24_create_order_cancellation,
+  );
+
+  server.registerTool(
+    "cafe24_update_order_cancellation",
+    {
+      title: "Update Cafe24 Order Cancellation (Single)",
+      description:
+        "Update or undo a specific cancellation for an order by order ID and claim code.",
+      inputSchema: OrderCancellationUpdateParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    cafe24_update_order_cancellation,
   );
 }
