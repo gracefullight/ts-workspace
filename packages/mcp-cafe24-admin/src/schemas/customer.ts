@@ -50,3 +50,15 @@ export const CustomerSettingUpdateParamsSchema = z
       .describe("Allow birthday update: T=Yes, F=No"),
   })
   .strict();
+
+export const CustomerPrivacyParamsSchema = z
+  .object({
+    shop_no: z.number().int().min(1).default(1).describe("Shop Number (default: 1)"),
+    member_id: z.string().max(200).optional().describe("Member ID(s), comma-separated"),
+    cellphone: z.string().max(200).optional().describe("Mobile number(s), comma-separated"),
+  })
+  .strict()
+  .refine((data) => data.member_id || data.cellphone, {
+    message: "Either member_id or cellphone must be provided",
+    path: ["member_id"],
+  });

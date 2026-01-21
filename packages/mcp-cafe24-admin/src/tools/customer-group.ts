@@ -1,13 +1,16 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
+  CommonParamsSchema,
   CustomerGroupParamsSchema,
   CustomerGroupsCountParamsSchema,
   CustomerGroupsSearchParamsSchema,
   MoveCustomerToGroupParamsSchema,
 } from "@/schemas/customer-group.js";
 import type {
+  CommonParams,
   CustomerGroup,
   CustomerGroupParams,
+  CustomerGroupSettingResponse,
   CustomerGroupsCountParams,
   CustomerGroupsSearchParams,
   MoveCustomerToGroupParams,
@@ -138,6 +141,48 @@ async function cafe24_move_customers_to_group(params: MoveCustomerToGroupParams)
   }
 }
 
+async function cafe24_retrieve_customer_group_setting(params: CommonParams) {
+  try {
+    const data = await makeApiRequest<CustomerGroupSettingResponse>(
+      "/admin/customergroups/setting",
+      "GET",
+      undefined,
+      params,
+    );
+    const s = data.customergroup;
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text:
+            "# Customer Group Setting\n\n" +
+            `- **Shop No**: ${s.shop_no}\n` +
+            `- **Auto Update**: ${s.auto_update === "T" ? "Enabled" : "Disabled"}\n` +
+            `- **Use Auto Update**: ${s.use_auto_update === "T" ? "Yes (In use)" : "No (Paused)"}\n` +
+            `- **Tier Upgrade Basis**: ${s.customer_tier_criteria}\n` +
+            `- **Purchase Amount Definition**: ${s.standard_purchase_amount}\n` +
+            `- **Offline Purchase Amount**: ${s.offline_purchase_amount ?? "N/A"}\n` +
+            `- **Purchase Count Definition**: ${s.standard_purchase_count}\n` +
+            `- **Offline Purchase Count**: ${s.offline_purchase_count ?? "N/A"}\n` +
+            `- **Auto Update Criteria**: ${s.auto_update_criteria}\n` +
+            `- **Deduct Cancellation/Refund**: ${s.deduct_cancellation_refund === "T" ? "Yes" : "No"}\n` +
+            `- **Auto Update Frequency**: ${s.interval_auto_update}\n` +
+            `- **Assessment Period**: ${s.total_period}\n` +
+            `- **Update Date**: ${s.auto_update_set_date}\n` +
+            `- **Use Discount Limit**: ${s.use_discount_limit === "T" ? "Yes" : "No"}\n` +
+            `- **Discount Limit Reset Cycle**: ${s.discount_limit_reset_period}\n` +
+            `- **Discount Limit Start**: ${s.discount_limit_begin_date}\n` +
+            `- **Discount Limit End**: ${s.discount_limit_end_date}\n`,
+        },
+      ],
+      structuredContent: data,
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
 export function registerCustomerGroupTools(server: McpServer): void {
   server.registerTool(
     "cafe24_list_customer_groups",
@@ -203,5 +248,21 @@ export function registerCustomerGroupTools(server: McpServer): void {
       },
     },
     cafe24_move_customers_to_group,
+  );
+
+  server.registerTool(
+    "cafe24_retrieve_customer_group_setting",
+    {
+      title: "Retrieve Cafe24 Customer Group Setting",
+      description: "Retrieve customer group (tier) auto-update and assessment settings.",
+      inputSchema: CommonParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_retrieve_customer_group_setting,
   );
 }

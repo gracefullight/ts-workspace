@@ -1,8 +1,14 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { z } from "zod";
-import type { Customer, CustomerSetting } from "@/types/index.js";
+import type {
+  Customer,
+  CustomerPrivacyParams,
+  CustomerPrivacyResponse,
+  CustomerSetting,
+} from "@/types/index.js";
 import {
   CustomerDetailParamsSchema,
+  CustomerPrivacyParamsSchema,
   CustomerSettingParamsSchema,
   CustomerSettingUpdateParamsSchema,
   CustomersSearchParamsSchema,
@@ -225,6 +231,48 @@ async function cafe24_update_customer_setting(
   }
 }
 
+async function cafe24_list_customers_privacy(params: CustomerPrivacyParams) {
+  try {
+    const data = await makeApiRequest<CustomerPrivacyResponse>(
+      "/admin/customers",
+      "GET",
+      undefined,
+      params,
+    );
+    const customers = data.customers || [];
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text:
+            `Found ${customers.length} customers with privacy details\n\n` +
+            customers
+              .map(
+                (c) =>
+                  `## ${c.member_id} (Group #${c.group_no})\n` +
+                  `- **Auth Status**: ${c.member_authentication}\n` +
+                  `- **Verification**: ${c.authentication_method || "None"}\n` +
+                  `- **Blacklist**: ${c.use_blacklist === "T" ? `Yes (${c.blacklist_type})` : "No"}\n` +
+                  `- **SMS/News**: ${c.sms === "T" ? "Yes" : "No"} / ${c.news_mail}\n` +
+                  `- **Points**: Total ${c.total_points}, Avail ${c.available_points}, Used ${c.used_points}\n` +
+                  `- **Credits**: ${c.available_credits}\n` +
+                  `- **Last Login**: ${c.last_login_date}\n` +
+                  `- **Created**: ${c.created_date}\n` +
+                  `- **Gender**: ${c.gender}\n` +
+                  `- **Mobile App**: ${c.use_mobile_app === "T" ? "Yes" : "No"}\n` +
+                  `- **Tier Fixed**: ${c.fixed_group === "T" ? "Yes" : "No"}\n`,
+              )
+              .join("\n"),
+        },
+      ],
+      structuredContent: data,
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
 export function registerTools(server: McpServer): void {
   server.registerTool(
     "cafe24_list_customers",
@@ -292,5 +340,22 @@ export function registerTools(server: McpServer): void {
       },
     },
     cafe24_update_customer_setting,
+  );
+
+  server.registerTool(
+    "cafe24_list_customers_privacy",
+    {
+      title: "List Cafe24 Customers Privacy Details",
+      description:
+        "Retrieve detailed privacy information for customers using member ID or cellphone. Returns authentication, points, credits, blacklist status, and tier fixing settings. Requires either member_id or cellphone.",
+      inputSchema: CustomerPrivacyParamsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    cafe24_list_customers_privacy,
   );
 }

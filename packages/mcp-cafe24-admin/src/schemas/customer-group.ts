@@ -56,3 +56,9 @@ export const MoveCustomerToGroupParamsSchema = z
       .describe("List of customers to move to the specified group."),
   })
   .strict();
+
+export const CommonParamsSchema = z
+  .object({
+    shop_no: z.number().int().default(1).describe("Shop Number. Defaults to 1."),
+  })
+  .strict();

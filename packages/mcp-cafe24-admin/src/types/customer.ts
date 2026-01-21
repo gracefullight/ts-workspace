@@ -83,3 +83,35 @@ export interface Policy {
   required_withdrawal?: string;
   withdrawal?: string;
 }
+
+export interface CustomerPrivacy {
+  shop_no: number;
+  member_id: string;
+  group_no: number;
+  member_authentication: "T" | "F" | "B" | "J";
+  use_blacklist: "T" | "F";
+  blacklist_type: "P" | "L" | "A" | "" | "F";
+  authentication_method: "i" | "m" | "e" | "d" | "a" | null;
+  sms: "T" | "F";
+  news_mail: "T" | "F" | "D";
+  solar_calendar: "T" | "F";
+  total_points: string;
+  available_points: string;
+  used_points: string;
+  last_login_date: string;
+  created_date: string;
+  gender: "M" | "F";
+  use_mobile_app: "T" | "F";
+  available_credits: string;
+  fixed_group: "T" | "F";
+}
+
+export type CustomerPrivacyResponse = {
+  customers: CustomerPrivacy[];
+};
+
+export interface CustomerPrivacyParams {
+  shop_no?: number;
+  member_id?: string;
+  cellphone?: string;
+}
