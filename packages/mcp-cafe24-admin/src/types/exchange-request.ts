@@ -44,6 +44,15 @@ export interface ExchangeRequestUpdate {
   reject_reason?: string | null;
 }
 
+export interface ExchangeRequestUpdateSingle {
+  order_item_code: string[];
+  undone: "T";
+  reason_type?: "A" | "B" | "J" | "C" | "L" | "D" | "E" | "F" | "K" | "G" | "H" | "I";
+  reason?: string | null;
+  display_reject_reason?: "T" | "F";
+  reject_reason?: string | null;
+}
+
 export interface ExchangeRequestResponse {
   shop_no: number;
   order_id: string;

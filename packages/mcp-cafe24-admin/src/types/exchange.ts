@@ -145,6 +145,8 @@ export interface Exchange {
     phone: string;
     cellphone: string;
     zipcode: string;
+    address1?: string;
+    address2?: string;
     address: string;
   };
   additional_payment: {
@@ -182,6 +184,7 @@ export interface Exchange {
   add_discount_amount: string;
   member_grade_discount_amount: string;
   shipping_discount_amount: string;
+  commission: string;
   coupon_discount_amount: string;
   point_used: string;
   credit_used: string;
@@ -198,4 +201,52 @@ export interface Exchange {
   return_invoice_success: string | null;
   return_invoice_fail_reason: string | null;
   cancel_fee_amount: string | null;
+}
+
+export interface ExchangeCreateResult {
+  shop_no: number;
+  order_id: string;
+  status: string;
+  claim_code: string;
+  items: Array<{
+    order_item_code: string;
+    quantity: number;
+    exchange_variant_code: string | null;
+  }>;
+  exchanged_items: Array<{
+    order_item_code: string;
+  }>;
+}
+
+export interface ExchangeUpdateResult {
+  shop_no: number;
+  order_id: string;
+  claim_code: string;
+  status: string;
+  pickup_completed: string;
+  carrier_id: string | null;
+  return_invoice_no: string | null;
+  return_shipping_company_name: string | null;
+  return_invoice_success: string | null;
+  return_invoice_fail_reason: string | null;
+  recover_inventory: string;
+  exchanged_after_collected: string | null;
+  items: Array<{
+    order_item_code: string;
+  }>;
+  request_pickup: string | null;
+  pickup: {
+    name: string | null;
+    phone: string | null;
+    cellphone: string | null;
+    zipcode: string | null;
+    address1: string | null;
+    address2: string | null;
+  };
+  undone: string | null;
+  add_memo_too: string | null;
+  undone_reason_type: string | null;
+  undone_reason: string | null;
+  expose_order_detail: string | null;
+  exposed_undone_reason: string | null;
 }

@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { z } from "zod";
 import type { ExchangeRequestResponse } from "@/types/index.js";
 import {
+  ExchangeRequestAcceptParamsSchema,
   ExchangeRequestCreateParamsSchema,
   ExchangeRequestUpdateParamsSchema,
 } from "../schemas/exchange-request.js";
@@ -29,6 +30,36 @@ async function cafe24_create_exchange_request(
       ],
       structuredContent: {
         results: data.exchangerequests,
+      },
+    };
+  } catch (error) {
+    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+  }
+}
+
+async function cafe24_accept_order_exchange_request(
+  params: z.infer<typeof ExchangeRequestAcceptParamsSchema>,
+) {
+  try {
+    const { order_id, shop_no, request } = params;
+    const data = await makeApiRequest<{ exchangerequests: ExchangeRequestResponse }>(
+      `/admin/orders/${order_id}/exchangerequests`,
+      "PUT",
+      {
+        shop_no,
+        request,
+      },
+    );
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Successfully accepted exchange request for order #${order_id}.`,
+        },
+      ],
+      structuredContent: {
+        exchangerequests: data.exchangerequests,
       },
     };
   } catch (error) {
@@ -66,6 +97,22 @@ async function cafe24_update_exchange_request(
 }
 
 export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "cafe24_accept_order_exchange_request",
+    {
+      title: "Accept Cafe24 Order Exchange Request",
+      description: "Accepts/Rejects an exchange request for a specific order.",
+      inputSchema: ExchangeRequestAcceptParamsSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    cafe24_accept_order_exchange_request,
+  );
+
   server.registerTool(
     "cafe24_create_exchange_request",
     {

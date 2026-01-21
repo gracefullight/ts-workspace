@@ -108,3 +108,25 @@ export const ExchangeRequestUpdateParamsSchema = z
       .describe("Listing of exchange request updates"),
   })
   .strict();
+export const ExchangeRequestAcceptParamsSchema = z
+  .object({
+    shop_no: z.number().min(1).default(1).describe("Shop Number"),
+    order_id: z.string().describe("Order ID"),
+    request: z.object({
+      order_item_code: z.array(z.string()).describe("Order item code"),
+      undone: z.enum(["T"]).describe("Rejected to accept (T: Yes)"),
+      reason_type: z
+        .enum(["A", "B", "J", "C", "L", "D", "E", "F", "K", "G", "H", "I"])
+        .optional()
+        .describe(
+          "Type of reason (A: change of mind, B: shipping delay, J: shipping error, C: unavailable shipping zone, L: Export/Customs clearance issue, D: bad packaging, E: dissatisfied with product, F:product does not match the description, K: defective product, G: dissatisfied with service, H: out of stock, I: others)",
+        ),
+      reason: z.string().max(2000).nullable().optional().describe("Reason"),
+      display_reject_reason: z
+        .enum(["T", "F"])
+        .default("F")
+        .describe("Display reason in [Storefront>My Orders] (T: yes, F: no)"),
+      reject_reason: z.string().max(2000).nullable().optional().describe("Reason for rejection"),
+    }),
+  })
+  .strict();

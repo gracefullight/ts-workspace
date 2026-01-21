@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { z } from "zod";
-import type { Exchange } from "@/types/index.js";
+import type { Exchange, ExchangeCreateResult, ExchangeUpdateResult } from "@/types/index.js";
 import {
   ExchangeCreateParamsSchema,
   ExchangeDetailParamsSchema,
@@ -58,20 +58,25 @@ async function cafe24_get_exchange(params: z.infer<typeof ExchangeDetailParamsSc
 
 async function cafe24_create_exchange(params: z.infer<typeof ExchangeCreateParamsSchema>) {
   try {
-    const data = await makeApiRequest<{ exchange: any[] }>("/admin/exchange", "POST", {
-      shop_no: params.shop_no,
-      requests: params.requests,
-    });
+    const { order_id, shop_no, request } = params;
+    const data = await makeApiRequest<{ exchange: ExchangeCreateResult }>(
+      `/admin/orders/${order_id}/exchange`,
+      "POST",
+      {
+        shop_no,
+        request,
+      },
+    );
 
     return {
       content: [
         {
           type: "text" as const,
-          text: `Successfully created ${data.exchange.length} exchange request(s).`,
+          text: `Successfully created exchange request for order #${order_id}. Claim Code: ${data.exchange.claim_code}`,
         },
       ],
       structuredContent: {
-        results: data.exchange,
+        exchange: data.exchange,
       },
     };
   } catch (error) {
@@ -81,20 +86,25 @@ async function cafe24_create_exchange(params: z.infer<typeof ExchangeCreateParam
 
 async function cafe24_update_exchange(params: z.infer<typeof ExchangeUpdateParamsSchema>) {
   try {
-    const data = await makeApiRequest<{ exchange: any[] }>("/admin/exchange", "PUT", {
-      shop_no: params.shop_no,
-      requests: params.requests,
-    });
+    const { order_id, claim_code, shop_no, request } = params;
+    const data = await makeApiRequest<{ exchange: ExchangeUpdateResult }>(
+      `/admin/orders/${order_id}/exchange/${claim_code}`,
+      "PUT",
+      {
+        shop_no,
+        request,
+      },
+    );
 
     return {
       content: [
         {
           type: "text" as const,
-          text: `Successfully updated ${data.exchange.length} exchange request(s).`,
+          text: `Successfully updated exchange request ${claim_code} for order #${order_id}.`,
         },
       ],
       structuredContent: {
-        results: data.exchange,
+        exchange: data.exchange,
       },
     };
   } catch (error) {
@@ -123,7 +133,7 @@ export function registerTools(server: McpServer): void {
     "cafe24_create_exchange",
     {
       title: "Create Cafe24 Exchange",
-      description: "Create new exchange requests for orders.",
+      description: "Create a new exchange request for an order.",
       inputSchema: ExchangeCreateParamsSchema,
       annotations: {
         readOnlyHint: false,
@@ -139,7 +149,7 @@ export function registerTools(server: McpServer): void {
     "cafe24_update_exchange",
     {
       title: "Update Cafe24 Exchange",
-      description: "Update existing exchange requests (status, pickup, information).",
+      description: "Update an existing exchange request (status, pickup, information).",
       inputSchema: ExchangeUpdateParamsSchema,
       annotations: {
         readOnlyHint: false,
