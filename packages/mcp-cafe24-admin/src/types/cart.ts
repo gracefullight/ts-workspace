@@ -24,3 +24,22 @@ export interface CartItem extends Record<string, unknown> {
 export interface CartListResponse {
   carts: CartItem[];
 }
+
+export interface ProductCart extends Record<string, unknown> {
+  shop_no: number;
+  member_id: string;
+  created_date: string;
+  product_no: number;
+  variant_code: string;
+  quantity: number;
+  product_bundle: "T" | "F";
+}
+
+export interface ListProductCartsResponse extends Record<string, unknown> {
+  carts: ProductCart[];
+  links?: { rel: string; href: string }[];
+}
+
+export interface CountProductCartsResponse extends Record<string, unknown> {
+  count: number;
+}
