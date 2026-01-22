@@ -1,5 +1,12 @@
 # @gracefullight/saju
 
+## [1.1.3](https://github.com/gracefullight/pkgs/compare/@gracefullight/saju@1.1.2...@gracefullight/saju@1.1.3) (2026-01-22)
+
+
+### Bug Fixes
+
+* resolve 9 lint issues including auto-fixable code style and type safety ([b21a32c](https://github.com/gracefullight/pkgs/commit/b21a32c0dc0455393f88ac159e9a2d41f0c6b959))
+
 ## [1.1.2](https://github.com/gracefullight/pkgs/compare/@gracefullight/saju@1.1.1...@gracefullight/saju@1.1.2) (2026-01-22)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.3...opencode-plugin-mimic@0.1.4) (2026-01-22)
+
+
+### Bug Fixes
+
+* resolve 9 lint issues including auto-fixable code style and type safety ([b21a32c](https://github.com/gracefullight/pkgs/commit/b21a32c0dc0455393f88ac159e9a2d41f0c6b959))
+
 ## [0.1.3](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.2...opencode-plugin-mimic@0.1.3) (2026-01-22)
 
 

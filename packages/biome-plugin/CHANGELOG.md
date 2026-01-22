@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/gracefullight/pkgs/compare/@gracefullight/biome-plugin@0.2.1...@gracefullight/biome-plugin@0.2.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* resolve 9 lint issues including auto-fixable code style and type safety ([b21a32c](https://github.com/gracefullight/pkgs/commit/b21a32c0dc0455393f88ac159e9a2d41f0c6b959))
+
 ## [0.2.1](https://github.com/gracefullight/pkgs/compare/@gracefullight/biome-plugin@0.2.0...@gracefullight/biome-plugin@0.2.1) (2026-01-22)
 
 
