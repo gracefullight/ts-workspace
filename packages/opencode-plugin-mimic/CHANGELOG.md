@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.1...opencode-plugin-mimic@0.1.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* **opencode-plugin-mimic:** replace console.log with tui.showToast to prevent TUI overlay ([a61e2f3](https://github.com/gracefullight/pkgs/commit/a61e2f3f674df08f5e70814b60391771306d69fa))
+
 ## [0.1.1](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.0...opencode-plugin-mimic@0.1.1) (2026-01-22)
 
 
