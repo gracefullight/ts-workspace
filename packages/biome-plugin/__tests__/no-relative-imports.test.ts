@@ -136,6 +136,30 @@ const parentPath = "../parent";
 `,
   );
 
+  // Test file for vitest/vite config patterns
+  writeFileSync(
+    join(tempDir, "vitest-config.ts"),
+    `import { resolve } from "node:path";
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    passWithNoTests: true,
+    setupFiles: ["./vitest.setup.ts"],
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+    },
+  },
+});
+`,
+  );
+
   // Test file for single quotes
   writeFileSync(
     join(tempDir, "single-quotes.ts"),
@@ -319,6 +343,15 @@ describe("no-relative-imports", () => {
 
     it("does not flag any relative paths in non-import contexts", () => {
       const output = runBiomeLint("non-import-contexts.ts");
+      expect(output).not.toContain("Avoid relative import path");
+      expect(output).not.toContain("Avoid relative export path");
+      expect(output).not.toContain("Avoid relative dynamic import path");
+    });
+
+    it("allows vitest/vite config patterns (setupFiles, alias)", () => {
+      const output = runBiomeLint("vitest-config.ts");
+      expect(output).not.toContain("./vitest.setup.ts");
+      expect(output).not.toContain("./src");
       expect(output).not.toContain("Avoid relative import path");
       expect(output).not.toContain("Avoid relative export path");
       expect(output).not.toContain("Avoid relative dynamic import path");
