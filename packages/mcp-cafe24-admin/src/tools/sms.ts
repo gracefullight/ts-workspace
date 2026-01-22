@@ -1,47 +1,59 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { type SmsParams, SmsParamsSchema } from "@/schemas/sms.js";
+import { type SendSMS, SendSMSSchema } from "@/schemas/sms.js";
 import { handleApiError, makeApiRequest } from "@/services/api-client.js";
-import type { SmsSetting } from "@/types/index.js";
+import type { SMSRequest, SMSSendResponse } from "@/types/index.js";
 
-async function cafe24_get_sms_setting(params: SmsParams) {
+/**
+ * Send SMS or LMS messages
+ */
+async function cafe24_send_sms(params: SendSMS) {
   try {
-    const queryParams: Record<string, unknown> = {};
-    if (params.shop_no) {
-      queryParams.shop_no = params.shop_no;
-    }
+    const response = await makeApiRequest<SMSSendResponse>(
+      "/admin/sms",
+      "POST",
+      params as unknown as SMSRequest,
+    );
 
-    const data = await makeApiRequest("/admin/sms/setting", "GET", undefined, queryParams);
-    const responseData = data as { sms?: Record<string, unknown> } | Record<string, unknown>;
-    const sms = (responseData.sms || responseData) as SmsSetting;
+    const { queue_code } = response.sms;
 
     return {
       content: [
         {
           type: "text" as const,
-          text: `## SMS Settings\n\n- **Use SMS**: ${sms.use_sms || "N/A"}\n`,
+          text: `Successfully queued SMS/LMS message.\n\n**Queue Code:** ${queue_code}`,
         },
       ],
-      structuredContent: sms as unknown as Record<string, unknown>,
+      structuredContent: response,
     };
   } catch (error) {
-    return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: handleApiError(error),
+        },
+      ],
+    };
   }
 }
 
-export function registerTools(server: McpServer): void {
+/**
+ * Register SMS tools
+ */
+export function registerTools(server: McpServer) {
   server.registerTool(
-    "cafe24_get_sms_setting",
+    "cafe24_send_sms",
     {
-      title: "Get Cafe24 SMS Settings",
-      description: "Retrieve SMS usage and configuration settings.",
-      inputSchema: SmsParamsSchema,
+      title: "Send SMS",
+      description: "Send SMS or LMS messages to customers or numbers",
+      inputSchema: SendSMSSchema,
       annotations: {
-        readOnlyHint: true,
+        readOnlyHint: false,
         destructiveHint: false,
-        idempotentHint: true,
+        idempotentHint: false,
         openWorldHint: true,
       },
     },
-    cafe24_get_sms_setting,
+    cafe24_send_sms,
   );
 }
