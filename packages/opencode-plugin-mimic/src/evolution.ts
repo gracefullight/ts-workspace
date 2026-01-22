@@ -155,11 +155,7 @@ async function buildMcpEvolution(
 
   const configPath = join(ctx.directory, "opencode.json");
   const config = await readOpencodeConfig(configPath);
-  const mcpConfig = generateMcpConfig(
-    suggestion.name,
-    suggestion.description,
-    suggestion.pattern,
-  );
+  const mcpConfig = generateMcpConfig(suggestion.name, suggestion.description, suggestion.pattern);
 
   const mcp = { ...((config.mcp as Record<string, unknown>) || {}), ...mcpConfig };
   const content = JSON.stringify({ ...config, mcp }, null, 2);
@@ -324,9 +320,7 @@ export function suggestEvolution(pattern: Pattern, ctx: MimicContext): Evolution
   return null;
 }
 
-export async function getEvolutionSuggestions(
-  ctx: MimicContext,
-): Promise<EvolutionSuggestion[]> {
+export async function getEvolutionSuggestions(ctx: MimicContext): Promise<EvolutionSuggestion[]> {
   const state = await ctx.stateManager.read();
   const suggestions: EvolutionSuggestion[] = [];
 

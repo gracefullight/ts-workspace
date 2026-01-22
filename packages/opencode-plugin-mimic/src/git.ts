@@ -15,11 +15,14 @@ export function getGitHistory(directory: string, limit = 50): string[] {
 
 export function getRecentlyModifiedFiles(directory: string): string[] {
   try {
-    const result = execSync("git diff --name-only HEAD~10 HEAD 2>/dev/null || git diff --name-only", {
-      cwd: directory,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    const result = execSync(
+      "git diff --name-only HEAD~10 HEAD 2>/dev/null || git diff --name-only",
+      {
+        cwd: directory,
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      },
+    );
     return result.trim().split("\n").filter(Boolean);
   } catch {
     return [];

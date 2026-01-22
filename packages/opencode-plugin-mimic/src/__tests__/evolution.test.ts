@@ -39,13 +39,15 @@ describe("evolution", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (StateManager as unknown as ReturnType<typeof vi.fn>).mockImplementation(function StateManager() {
-      return {
-        read: vi.fn(),
-        save: vi.fn(),
-        addMilestone: vi.fn(),
-      };
-    });
+    (StateManager as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      function StateManager() {
+        return {
+          read: vi.fn(),
+          save: vi.fn(),
+          addMilestone: vi.fn(),
+        };
+      },
+    );
     manager = new StateManager("/tmp/test");
   });
 

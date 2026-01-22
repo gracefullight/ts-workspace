@@ -39,29 +39,39 @@ describe("git", () => {
     });
 
     it("getRecentlyModifiedFiles calls git diff", () => {
-        vi.mocked(execSync).mockReturnValue("file1.ts\nfile2.ts");
-        const files = getRecentlyModifiedFiles("/tmp");
-        expect(execSync).toHaveBeenCalledWith(expect.stringContaining("git diff"), expect.any(Object));
-        expect(files).toEqual(["file1.ts", "file2.ts"]);
+      vi.mocked(execSync).mockReturnValue("file1.ts\nfile2.ts");
+      const files = getRecentlyModifiedFiles("/tmp");
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining("git diff"),
+        expect.any(Object),
+      );
+      expect(files).toEqual(["file1.ts", "file2.ts"]);
     });
 
     it("getRecentlyModifiedFiles handles errors", () => {
-        vi.mocked(execSync).mockImplementation(() => { throw new Error("git error"); });
-        const files = getRecentlyModifiedFiles("/tmp");
-        expect(files).toEqual([]);
+      vi.mocked(execSync).mockImplementation(() => {
+        throw new Error("git error");
+      });
+      const files = getRecentlyModifiedFiles("/tmp");
+      expect(files).toEqual([]);
     });
 
     it("getCommitMessages calls git log with format", () => {
-        vi.mocked(execSync).mockReturnValue("msg1\nmsg2");
-        const msgs = getCommitMessages("/tmp");
-        expect(execSync).toHaveBeenCalledWith(expect.stringContaining("git log --format=%s"), expect.any(Object));
-        expect(msgs).toEqual(["msg1", "msg2"]);
+      vi.mocked(execSync).mockReturnValue("msg1\nmsg2");
+      const msgs = getCommitMessages("/tmp");
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining("git log --format=%s"),
+        expect.any(Object),
+      );
+      expect(msgs).toEqual(["msg1", "msg2"]);
     });
 
     it("getCommitMessages handles errors", () => {
-        vi.mocked(execSync).mockImplementation(() => { throw new Error("git error"); });
-        const msgs = getCommitMessages("/tmp");
-        expect(msgs).toEqual([]);
+      vi.mocked(execSync).mockImplementation(() => {
+        throw new Error("git error");
+      });
+      const msgs = getCommitMessages("/tmp");
+      expect(msgs).toEqual([]);
     });
   });
 });
