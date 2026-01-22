@@ -105,6 +105,8 @@ import { registerTools as registerSocialNaverShoppingTools } from "@/tools/socia
 import { registerTools as registerStoreTools } from "@/tools/store.js";
 import { registerTools as registerSubscriptionTools } from "@/tools/subscription.js";
 import { registerTools as registerSupplierTools } from "@/tools/supplier.js";
+import { registerTools as registerSupplierRegionalSurchargeTools } from "@/tools/supplier-regional-surcharges.js";
+import { registerTools as registerSupplierUserTools } from "@/tools/supplier-users.js";
 import { registerTools as registerTaxManagerTools } from "@/tools/taxmanager.js";
 import { registerTools as registerThemeTools } from "@/tools/theme.js";
 import { registerTools as registerTrendTools } from "@/tools/trend.js";
@@ -220,6 +222,8 @@ export function registerAllTools(server: McpServer): void {
   registerStoreTools(server);
   registerSubscriptionTools(server);
   registerSupplierTools(server);
+  registerSupplierUserTools(server);
+  registerSupplierRegionalSurchargeTools(server);
   registerTaxManagerTools(server);
   registerThemeTools(server);
   registerTrendTools(server);
