@@ -7,7 +7,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build --base-href /pkgs/ng-daum-address-example/ && rm -rf out && mv dist/ng-daum-address-example/browser out",
-    "test": "vitest"
+    "test": "ng test --watch=false"
   },
   "dependencies": {
     "@angular/common": "^21.1.0",
@@ -24,6 +24,14 @@
     "@angular/build": "^21.1.0",
     "@angular/cli": "^21.1.0",
     "@angular/compiler-cli": "^21.1.0",
+    "@angular/platform-browser-dynamic": "^21.1.0",
+    "@types/jasmine": "^5.1.4",
+    "@types/node": "^24.10.4",
+    "jasmine-core": "^5.1.2",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
     "typescript": "^5"
   }
 }

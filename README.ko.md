@@ -12,6 +12,7 @@
 | [@gracefullight/saju](./packages/saju) | 한중 사주명리 계산 라이브러리 | [![npm](https://img.shields.io/npm/v/@gracefullight/saju.svg)](https://www.npmjs.org/package/@gracefullight/saju) |
 | [@gracefullight/validate-branch](./packages/validate-branch) | Git 브랜치 이름 유효성 검사 도구 | [![npm](https://img.shields.io/npm/v/@gracefullight/validate-branch.svg)](https://www.npmjs.org/package/@gracefullight/validate-branch) |
 | [@gracefullight/mcp-cafe24-admin](./packages/mcp-cafe24-admin) | MCP server for Cafe24 Admin API - 모든 19개 API 섹션 포괄 통합 | [![npm](https://img.shields.io/npm/v/@gracefullight/mcp-cafe24-admin.svg)](https://www.npmjs.org/package/@gracefullight/mcp-cafe24-admin) |
+| [opencode-plugin-mimic](./packages/opencode-plugin-mimic) | 패턴을 학습해 워크플로에 적응하는 OpenCode 플러그인. Mimic은 작업 방식을 관찰하고 세션 간에 기억하며, 반복되는 행동을 기반으로 행동을 제안합니다. | [![npm](https://img.shields.io/npm/v/opencode-plugin-mimic.svg)](https://www.npmjs.org/package/opencode-plugin-mimic) |
 | [create-fullstack-starter](./packages/create-fullstack-starter) | Fullstack Starter 템플릿 CLI | [![npm](https://img.shields.io/npm/v/create-fullstack-starter.svg)](https://www.npmjs.org/package/create-fullstack-starter) |
 | [saju](./packages/saju-dart) | Dart/Flutter 사주명리 계산 라이브러리 | [![pub](https://img.shields.io/pub/v/saju.svg)](https://pub.dev/packages/saju) |
 
