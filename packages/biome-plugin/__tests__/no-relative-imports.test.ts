@@ -12,7 +12,7 @@ beforeAll(() => {
 
   cpSync(rulesDir, join(tempDir, "rules"), { recursive: true });
 
-  const ruleContent = require("fs").readFileSync(
+  const ruleContent = require("node:fs").readFileSync(
     join(tempDir, "rules/no-relative-imports.grit"),
     "utf-8",
   );
@@ -184,6 +184,11 @@ function runBiomeLint(file: string): string {
 
 describe("no-relative-imports", () => {
   describe("should report relative imports", () => {
+    it("detects static import with ./", () => {
+      const output = runBiomeLint("relative-imports.ts");
+      expect(output).toContain("./utils");
+      expect(output).toContain("Avoid relative import path");
+    });
     it("detects static import with ./", () => {
       const output = runBiomeLint("relative-imports.ts");
       expect(output).toContain("./utils");

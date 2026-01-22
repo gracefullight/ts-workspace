@@ -31,7 +31,7 @@ export default async function LocaleLayout({
   // Enable static rendering
   setRequestLocale(locale);
 
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 

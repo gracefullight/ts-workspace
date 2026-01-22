@@ -11,15 +11,9 @@ interface TimePickerProps {
   hour: number;
   minute: number;
   onTimeChange: (hour: number, minute: number) => void;
-  placeholder?: string;
 }
 
-export function TimePicker({
-  hour,
-  minute,
-  onTimeChange,
-  placeholder = "시간 선택",
-}: TimePickerProps) {
+export function TimePicker({ hour, minute, onTimeChange }: TimePickerProps) {
   const [open, setOpen] = React.useState(false);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);

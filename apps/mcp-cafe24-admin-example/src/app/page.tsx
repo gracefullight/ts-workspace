@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
     <main>
@@ -38,11 +36,12 @@ export default function Home() {
           className="coffee-button"
           rel="noopener"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
             alt="Buy Me A Coffee"
-            style={{ height: "60px", width: "217px" }}
+            width={217}
+            height={60}
+            unoptimized
           />
         </a>
       </div>

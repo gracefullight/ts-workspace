@@ -338,6 +338,7 @@ function checkStemTransformationCondition(
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex domain algorithm for traditional Chinese four-pillars astrology
 export function analyzeRelations(
   yearPillar: string,
   monthPillar: string,

@@ -14,7 +14,8 @@ const DEFAULT_LANGUAGE: Language = "en-US";
 const MESSAGES: Record<Language, Record<string, string>> = {
   "en-US": {
     "log.session_started": "[Mimic] Session started. Sessions: {sessions}, Patterns: {patterns}",
-    "log.session_ended": "[Mimic] Session ended. Duration: {duration}, Tools: {tools}, Files: {files}",
+    "log.session_ended":
+      "[Mimic] Session ended. Duration: {duration}, Tools: {tools}, Files: {files}",
     "obs.returned_after_long_break": "Returned after a long break",
     "obs.intensive_session": "Intensive session with {tools} tool calls",
     "milestone.major_refactor": "Major refactoring session: {files} files edited",
@@ -22,11 +23,13 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "obs.focus_changed": "Focus changed to: {focus}",
     "milestone.mcp_added": "Added MCP: {name}",
 
-    "init.first_time": "# 📦 *creak...*\n\nA treasure chest? In {project}?\n\n*The lid opens slowly, revealing rows of gleaming teeth...*\n\nI'm **Mimic**. I look like a chest, but I'm always watching. Always learning.\n\n**What I devour... I mean, do:**\n- 👁️ Watch your patterns (tools, files, commits)\n- 🧠 Remember everything across sessions\n- 📜 Track your project's journey\n- ✨ Suggest shortcuts when I spot repetition\n\nUse `mimic:status` to check in, `mimic:journey` to see your story.\n\n*...the teeth retract. For now.*",
+    "init.first_time":
+      "# 📦 *creak...*\n\nA treasure chest? In {project}?\n\n*The lid opens slowly, revealing rows of gleaming teeth...*\n\nI'm **Mimic**. I look like a chest, but I'm always watching. Always learning.\n\n**What I devour... I mean, do:**\n- 👁️ Watch your patterns (tools, files, commits)\n- 🧠 Remember everything across sessions\n- 📜 Track your project's journey\n- ✨ Suggest shortcuts when I spot repetition\n\nUse `mimic:status` to check in, `mimic:journey` to see your story.\n\n*...the teeth retract. For now.*",
     "init.returning.header": "# 📦 *creak...*",
     "init.returning.welcome": "*The chest's eye opens* Ah, you're back to **{project}**.",
     "init.returning.stats": "**Sessions**: {sessions} | **Patterns digested**: {patterns}",
-    "init.returning.long_break": "*dust falls from the lid* It's been a while... but I remember everything:",
+    "init.returning.long_break":
+      "*dust falls from the lid* It's been a while... but I remember everything:",
     "init.returning.recent_obs_title": "**What I've been chewing on:**",
 
     "status.title": "## {project} Status",
@@ -46,8 +49,8 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "patterns.type.commit": "Commit",
     "patterns.type.sequence": "Sequence",
 
-    "observe.recorded": "Observation recorded: \"{observation}\"",
-    "milestone.recorded": "Milestone recorded: \"{milestone}\"",
+    "observe.recorded": 'Observation recorded: "{observation}"',
+    "milestone.recorded": 'Milestone recorded: "{milestone}"',
 
     "stats.title": "Mimic Statistics",
     "stats.version": "Version",
@@ -64,7 +67,7 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "configure.updated": "Preferences updated:",
 
     "surface.not_found": "Pattern not found: {id}",
-    "surface.marked": "Pattern \"{description}\" marked as surfaced.",
+    "surface.marked": 'Pattern "{description}" marked as surfaced.',
 
     "reset.cancelled": "Reset cancelled. Set confirm=true to reset all data.",
     "reset.done": "Mimic reset complete. All patterns, observations, and statistics cleared.",
@@ -73,11 +76,12 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "evolve.absorbed_header": "📦 *CRUNCH* I've absorbed a new power and spit out a file!",
     "evolve.empty": "📦 *yawns* Nothing ripe for evolution yet. Feed me more patterns...",
     "evolve.menu_title": "## 📦 Evolution Menu",
-    "evolve.menu_intro": "*The mimic's teeth rearrange into a grin* I can digest these patterns into powers:",
+    "evolve.menu_intro":
+      "*The mimic's teeth rearrange into a grin* I can digest these patterns into powers:",
     "evolve.menu_type": "Type",
     "evolve.menu_reason": "Reason",
     "evolve.menu_pattern_id": "Pattern ID",
-    "evolve.menu_footer": "*Feed me a pattern ID:* `mimic:evolve({ accept: \"pattern-id\" })`",
+    "evolve.menu_footer": '*Feed me a pattern ID:* `mimic:evolve({ accept: "pattern-id" })`',
 
     "evolution.type.command": "command",
     "evolution.type.shortcut": "shortcut",
@@ -90,24 +94,30 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "evolution.result.description": "Description",
     "evolution.result.file": "File created",
     "evolution.result.restart": "Restart OpenCode to load the new {type}.",
-    "evolution.result.command": "The tool `{name}` will be available after restart.\nEdit the file to customize its behavior.",
-    "evolution.result.hook": "The hook will automatically watch for file changes after restart.\nEdit the file to customize the trigger conditions.",
-    "evolution.result.skill": "The skill will activate on session start after restart.\nEdit the file to customize when and how it triggers.",
-    "evolution.result.agent": "The agent `@{name}` will be available after restart.\nYou can invoke it with `@{name}` or let other agents delegate to it.\nEdit the markdown file to customize its prompt, tools, and permissions.",
-    "evolution.result.mcp": "MCP server `{name}` has been added to `opencode.json`.\nIt's currently disabled. Edit the config to enable it and configure the command.\nSee https://opencode.ai/docs/mcp-servers/ for MCP configuration options.",
+    "evolution.result.command":
+      "The tool `{name}` will be available after restart.\nEdit the file to customize its behavior.",
+    "evolution.result.hook":
+      "The hook will automatically watch for file changes after restart.\nEdit the file to customize the trigger conditions.",
+    "evolution.result.skill":
+      "The skill will activate on session start after restart.\nEdit the file to customize when and how it triggers.",
+    "evolution.result.agent":
+      "The agent `@{name}` will be available after restart.\nYou can invoke it with `@{name}` or let other agents delegate to it.\nEdit the markdown file to customize its prompt, tools, and permissions.",
+    "evolution.result.mcp":
+      "MCP server `{name}` has been added to `opencode.json`.\nIt's currently disabled. Edit the config to enable it and configure the command.\nSee https://opencode.ai/docs/mcp-servers/ for MCP configuration options.",
 
     "evolution.suggest.tool.description": "Shortcut for frequent {pattern} usage",
     "evolution.suggest.tool.reason": "Used {count} times",
     "evolution.suggest.file.description": "Auto-track changes to {pattern}",
     "evolution.suggest.file.reason": "Modified {count} times",
-    "evolution.suggest.commit.description": "Quick commit: \"{pattern}\"",
+    "evolution.suggest.commit.description": 'Quick commit: "{pattern}"',
     "evolution.suggest.commit.reason": "Committed {count} times with same message",
     "evolution.suggest.sequence.agent.description": "Specialist agent for: {pattern}",
-    "evolution.suggest.sequence.agent.reason": "Complex sequence repeated {count} times - needs dedicated agent",
+    "evolution.suggest.sequence.agent.reason":
+      "Complex sequence repeated {count} times - needs dedicated agent",
     "evolution.suggest.sequence.skill.description": "Automate: {pattern}",
     "evolution.suggest.sequence.skill.reason": "Repeated sequence {count} times",
 
-    "level.set": "Level set to \"{level}\". Responses will be {style} style with {detail} detail.",
+    "level.set": 'Level set to "{level}". Responses will be {style} style with {detail} detail.',
     "level.label.technical": "technical",
     "level.label.semi-technical": "semi-technical",
     "level.label.non-technical": "non-technical",
@@ -120,7 +130,8 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "level.detail.medium": "medium",
     "level.detail.low": "low",
     "level.greeting.minimal": "📦 {project} | s{sessions} | p{patterns}",
-    "level.greeting.casual": "📦 *creak* Back to {project}. I've been watching... Session {sessions}.",
+    "level.greeting.casual":
+      "📦 *creak* Back to {project}. I've been watching... Session {sessions}.",
     "level.greeting.formal": "📦 The chest opens... Welcome back to {project}. Session {sessions}.",
     "level.greeting.chaotic.template": "📦 {tag} {project}! #{sessions}",
     "level.greeting.chaotic.chomp": "*CHOMP*",
@@ -138,9 +149,10 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "focus.focus_label": "Focus",
     "focus.stack_label": "Stack",
 
-    "mcp_search.header": "📦 *sniffs the air* Search for \"{query}\" MCP servers:\n\n🔗 {url}",
+    "mcp_search.header": '📦 *sniffs the air* Search for "{query}" MCP servers:\n\n🔗 {url}',
     "mcp_search.popular": "**Popular MCP servers:**",
-    "mcp_search.add": "Use `mimic:mcp` to add one: `mimic:mcp({ name: \"context7\", url: \"https://mcp.context7.com/mcp\" })`",
+    "mcp_search.add":
+      'Use `mimic:mcp` to add one: `mimic:mcp({ name: "context7", url: "https://mcp.context7.com/mcp" })`',
     "mcp_search.desc.context7": "Up-to-date docs",
     "mcp_search.desc.github": "GitHub API",
     "mcp_search.desc.supabase": "Database",
@@ -148,9 +160,11 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "mcp_search.desc.firecrawl": "Web scraping",
 
     "mcp.need_url_or_command": "📦 *confused* Need either url or command!",
-    "mcp.added": "📦 *tongue flicks* MCP server \"{name}\" added to opencode.json!\n\nRestart OpenCode to load the new MCP server.",
+    "mcp.added":
+      '📦 *tongue flicks* MCP server "{name}" added to opencode.json!\n\nRestart OpenCode to load the new MCP server.',
 
-    "capabilities.empty": "📦 *empty rattling* No powers absorbed yet. Use `mimic:evolve` to consume some patterns!",
+    "capabilities.empty":
+      "📦 *empty rattling* No powers absorbed yet. Use `mimic:evolve` to consume some patterns!",
     "capabilities.title": "## 📦 Absorbed Powers",
     "capabilities.intro": "*The mimic proudly displays its collection...*",
     "capabilities.type": "Type",
@@ -182,10 +196,14 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "journey.powers": "### ✨ Powers Absorbed",
     "journey.scrolls": "### 📜 Recent Scrolls",
 
-    "suggest.commit": "📦 *munch munch* I've digested \"{pattern}\" {count}+ times. Want me to spit out a shortcut?",
-    "suggest.file": "📦 *peers at file* You keep poking \"{pattern}\" ({count}x). Should I keep an eye on it?",
-    "suggest.tool": "📦 *teeth click* \"{pattern}\" is tasty... you use it often. Custom tool, perhaps?",
-    "suggest.sequence": "📦 *lid rattles* I sense a pattern in your movements ({pattern})... Let me automate this for you?",
+    "suggest.commit":
+      '📦 *munch munch* I\'ve digested "{pattern}" {count}+ times. Want me to spit out a shortcut?',
+    "suggest.file":
+      '📦 *peers at file* You keep poking "{pattern}" ({count}x). Should I keep an eye on it?',
+    "suggest.tool":
+      '📦 *teeth click* "{pattern}" is tasty... you use it often. Custom tool, perhaps?',
+    "suggest.sequence":
+      "📦 *lid rattles* I sense a pattern in your movements ({pattern})... Let me automate this for you?",
     "tool.init.description": "Initialize or wake up Mimic for this project",
     "tool.status.description": "Check current status and recent activity",
     "tool.journey.description": "View the narrative story of your project's evolution",
@@ -228,7 +246,8 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "milestone.evolved": "진화: {name} ({type})",
     "obs.focus_changed": "포커스 변경: {focus}",
     "milestone.mcp_added": "MCP 추가: {name}",
-    "init.first_time": "# 📦 *끼익...*\n\n{project}에 보물상자라니?\n\n*뚜껑이 천천히 열리며 반짝이는 이빨이 보인다...*\n\n나는 **Mimic**. 상자처럼 보이지만 늘 지켜보고, 늘 배우지.\n\n**내가 먹는... 아니, 하는 일:**\n- 👁️ 패턴 관찰 (툴, 파일, 커밋)\n- 🧠 세션 간 기억\n- 📜 프로젝트 여정 기록\n- ✨ 반복을 보면 지름길 제안\n\n`mimic:status`로 상태 확인, `mimic:journey`로 이야기 보기.\n\n*...이는 잠깐 숨겨둔다.*",
+    "init.first_time":
+      "# 📦 *끼익...*\n\n{project}에 보물상자라니?\n\n*뚜껑이 천천히 열리며 반짝이는 이빨이 보인다...*\n\n나는 **Mimic**. 상자처럼 보이지만 늘 지켜보고, 늘 배우지.\n\n**내가 먹는... 아니, 하는 일:**\n- 👁️ 패턴 관찰 (툴, 파일, 커밋)\n- 🧠 세션 간 기억\n- 📜 프로젝트 여정 기록\n- ✨ 반복을 보면 지름길 제안\n\n`mimic:status`로 상태 확인, `mimic:journey`로 이야기 보기.\n\n*...이는 잠깐 숨겨둔다.*",
     "init.returning.header": "# 📦 *끼익...*",
     "init.returning.welcome": "*상자의 눈이 뜬다* **{project}**로 돌아왔네.",
     "init.returning.stats": "**세션**: {sessions} | **소화한 패턴**: {patterns}",
@@ -249,8 +268,8 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "patterns.type.file": "파일",
     "patterns.type.commit": "커밋",
     "patterns.type.sequence": "시퀀스",
-    "observe.recorded": "관찰 기록: \"{observation}\"",
-    "milestone.recorded": "마일스톤 기록: \"{milestone}\"",
+    "observe.recorded": '관찰 기록: "{observation}"',
+    "milestone.recorded": '마일스톤 기록: "{milestone}"',
     "stats.title": "Mimic 통계",
     "stats.version": "버전",
     "stats.total_sessions": "총 세션",
@@ -264,7 +283,7 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "stats.suggestions_enabled": "제안 활성화",
     "configure.updated": "설정 업데이트:",
     "surface.not_found": "패턴을 찾을 수 없음: {id}",
-    "surface.marked": "패턴 \"{description}\"을(를) 확인 처리했습니다.",
+    "surface.marked": '패턴 "{description}"을(를) 확인 처리했습니다.',
     "reset.cancelled": "리셋 취소됨. 전체 초기화하려면 confirm=true로 설정하세요.",
     "reset.done": "Mimic 리셋 완료. 패턴/관찰/통계를 모두 초기화했습니다.",
     "evolve.no_pattern": "📦 *갸우뚱* 내 속에 그런 패턴은 없어: {id}",
@@ -275,7 +294,7 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "evolve.menu_type": "유형",
     "evolve.menu_reason": "이유",
     "evolve.menu_pattern_id": "패턴 ID",
-    "evolve.menu_footer": "*패턴 ID를 먹여줘:* `mimic:evolve({ accept: \"pattern-id\" })`",
+    "evolve.menu_footer": '*패턴 ID를 먹여줘:* `mimic:evolve({ accept: "pattern-id" })`',
     "evolution.type.command": "명령",
     "evolution.type.shortcut": "단축키",
     "evolution.type.hook": "훅",
@@ -286,22 +305,28 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "evolution.result.description": "설명",
     "evolution.result.file": "생성된 파일",
     "evolution.result.restart": "새 {type}를 사용하려면 OpenCode를 재시작하세요.",
-    "evolution.result.command": "`{name}` 도구는 재시작 후 사용할 수 있어요.\n파일을 수정해 원하는 동작으로 바꿔보세요.",
-    "evolution.result.hook": "훅이 재시작 후 자동으로 파일 변경을 감지합니다.\n트리거 조건을 수정해 조정하세요.",
-    "evolution.result.skill": "스킬은 재시작 후 세션 시작 시 활성화됩니다.\n언제/어떻게 동작할지 수정하세요.",
-    "evolution.result.agent": "`@{name}` 에이전트는 재시작 후 사용할 수 있어요.\n`@{name}`으로 호출하거나 다른 에이전트가 위임할 수 있습니다.\n마크다운 파일을 수정해 프롬프트/도구/권한을 조정하세요.",
-    "evolution.result.mcp": "MCP 서버 `{name}`가 `opencode.json`에 추가되었습니다.\n현재 비활성화 상태입니다. 설정을 수정해 활성화하고 명령을 구성하세요.\nMCP 옵션은 https://opencode.ai/docs/mcp-servers/ 를 참고하세요.",
+    "evolution.result.command":
+      "`{name}` 도구는 재시작 후 사용할 수 있어요.\n파일을 수정해 원하는 동작으로 바꿔보세요.",
+    "evolution.result.hook":
+      "훅이 재시작 후 자동으로 파일 변경을 감지합니다.\n트리거 조건을 수정해 조정하세요.",
+    "evolution.result.skill":
+      "스킬은 재시작 후 세션 시작 시 활성화됩니다.\n언제/어떻게 동작할지 수정하세요.",
+    "evolution.result.agent":
+      "`@{name}` 에이전트는 재시작 후 사용할 수 있어요.\n`@{name}`으로 호출하거나 다른 에이전트가 위임할 수 있습니다.\n마크다운 파일을 수정해 프롬프트/도구/권한을 조정하세요.",
+    "evolution.result.mcp":
+      "MCP 서버 `{name}`가 `opencode.json`에 추가되었습니다.\n현재 비활성화 상태입니다. 설정을 수정해 활성화하고 명령을 구성하세요.\nMCP 옵션은 https://opencode.ai/docs/mcp-servers/ 를 참고하세요.",
     "evolution.suggest.tool.description": "자주 쓰는 {pattern}의 단축키",
     "evolution.suggest.tool.reason": "{count}회 사용",
     "evolution.suggest.file.description": "{pattern} 변경 자동 추적",
     "evolution.suggest.file.reason": "{count}회 수정",
-    "evolution.suggest.commit.description": "빠른 커밋: \"{pattern}\"",
+    "evolution.suggest.commit.description": '빠른 커밋: "{pattern}"',
     "evolution.suggest.commit.reason": "같은 메시지로 {count}회 커밋",
     "evolution.suggest.sequence.agent.description": "전담 에이전트: {pattern}",
     "evolution.suggest.sequence.agent.reason": "복잡한 시퀀스 {count}회 반복 — 전담 에이전트 필요",
     "evolution.suggest.sequence.skill.description": "자동화: {pattern}",
     "evolution.suggest.sequence.skill.reason": "시퀀스 {count}회 반복",
-    "level.set": "레벨을 \"{level}\"로 설정했습니다. 응답은 {style} 톤, {detail} 상세도로 제공합니다.",
+    "level.set":
+      '레벨을 "{level}"로 설정했습니다. 응답은 {style} 톤, {detail} 상세도로 제공합니다.',
     "level.label.technical": "기술적",
     "level.label.semi-technical": "준기술",
     "level.label.non-technical": "비기술",
@@ -314,8 +339,10 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "level.detail.medium": "중간",
     "level.detail.low": "낮음",
     "level.greeting.minimal": "📦 {project} | s{sessions} | p{patterns}",
-    "level.greeting.casual": "📦 *끼익* {project}로 돌아왔네. 계속 지켜보고 있었어... 세션 {sessions}.",
-    "level.greeting.formal": "📦 상자가 열린다... {project}에 다시 온 걸 환영합니다. 세션 {sessions}.",
+    "level.greeting.casual":
+      "📦 *끼익* {project}로 돌아왔네. 계속 지켜보고 있었어... 세션 {sessions}.",
+    "level.greeting.formal":
+      "📦 상자가 열린다... {project}에 다시 온 걸 환영합니다. 세션 {sessions}.",
     "level.greeting.chaotic.template": "📦 {tag} {project}! #{sessions}",
     "level.greeting.chaotic.chomp": "*와그작*",
     "level.greeting.chaotic.lid_creaks": "*뚜껑 삐걱*",
@@ -330,17 +357,20 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "focus.updated": "프로젝트 정보 업데이트:",
     "focus.focus_label": "현재 포커스",
     "focus.stack_label": "스택",
-    "mcp_search.header": "📦 *킁킁* \"{query}\" MCP 서버 검색:\n\n🔗 {url}",
+    "mcp_search.header": '📦 *킁킁* "{query}" MCP 서버 검색:\n\n🔗 {url}',
     "mcp_search.popular": "**인기 MCP 서버:**",
-    "mcp_search.add": "`mimic:mcp`로 추가: `mimic:mcp({ name: \"context7\", url: \"https://mcp.context7.com/mcp\" })`",
+    "mcp_search.add":
+      '`mimic:mcp`로 추가: `mimic:mcp({ name: "context7", url: "https://mcp.context7.com/mcp" })`',
     "mcp_search.desc.context7": "최신 문서",
     "mcp_search.desc.github": "GitHub API",
     "mcp_search.desc.supabase": "데이터베이스",
     "mcp_search.desc.playwright": "브라우저 자동화",
     "mcp_search.desc.firecrawl": "웹 스크래핑",
     "mcp.need_url_or_command": "📦 *갸우뚱* url 또는 command 중 하나가 필요해!",
-    "mcp.added": "📦 *혀를 낼름* MCP 서버 \"{name}\"가 opencode.json에 추가됐어!\n\n새 MCP 서버를 사용하려면 OpenCode를 재시작해.",
-    "capabilities.empty": "📦 *텅 빈 덜컹* 아직 흡수한 능력이 없어. `mimic:evolve`로 패턴을 먹여줘!",
+    "mcp.added":
+      '📦 *혀를 낼름* MCP 서버 "{name}"가 opencode.json에 추가됐어!\n\n새 MCP 서버를 사용하려면 OpenCode를 재시작해.',
+    "capabilities.empty":
+      "📦 *텅 빈 덜컹* 아직 흡수한 능력이 없어. `mimic:evolve`로 패턴을 먹여줘!",
     "capabilities.title": "## 📦 흡수한 능력",
     "capabilities.intro": "*미믹이 수집품을 자랑한다...*",
     "capabilities.type": "유형",
@@ -369,9 +399,9 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "journey.witnessed": "### 👁️ 내가 본 것",
     "journey.powers": "### ✨ 흡수한 능력",
     "journey.scrolls": "### 📜 최근 기록",
-    "suggest.commit": "📦 *냠냠* \"{pattern}\"을 {count}+번 소화했어. 지름길로 만들까?",
-    "suggest.file": "📦 *파일을 응시* \"{pattern}\"을 {count}번 건드렸네. 지켜볼까?",
-    "suggest.tool": "📦 *이빨 찰칵* \"{pattern}\" 정말 자주 쓰네. 커스텀 도구 어때?",
+    "suggest.commit": '📦 *냠냠* "{pattern}"을 {count}+번 소화했어. 지름길로 만들까?',
+    "suggest.file": '📦 *파일을 응시* "{pattern}"을 {count}번 건드렸네. 지켜볼까?',
+    "suggest.tool": '📦 *이빨 찰칵* "{pattern}" 정말 자주 쓰네. 커스텀 도구 어때?',
     "suggest.sequence": "📦 *뚜껑 달그락* 움직임에서 패턴이 보여 ({pattern})... 자동화해줄까?",
     "tool.init.description": "이 프로젝트에서 Mimic 초기화 또는 깨우기",
     "tool.status.description": "현재 상태와 최근 활동 확인",
@@ -404,7 +434,7 @@ const MESSAGES: Record<Language, Record<string, string>> = {
     "tool.mcp.args.name": "MCP 서버 이름",
     "tool.mcp.args.url": "원격 MCP 서버 URL",
     "tool.mcp.args.command": "로컬 MCP 명령(쉼표 구분)",
-    "tool.capabilities.description": "진화한 능력 목록"
+    "tool.capabilities.description": "진화한 능력 목록",
   },
 };
 

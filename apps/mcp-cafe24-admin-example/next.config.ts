@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: workspaceRoot,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.buymeacoffee.com",
+        pathname: "/buttons/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

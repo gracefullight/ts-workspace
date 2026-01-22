@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { detectPatterns, surfacePatterns } from "@/patterns";
-import { StateManager, createDefaultState } from "@/state";
-import { getCommitMessages, detectCommitPatterns } from "@/git";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { detectCommitPatterns, getCommitMessages } from "@/git";
 import { createI18n } from "@/i18n";
+import { detectPatterns, surfacePatterns } from "@/patterns";
+import { createDefaultState, StateManager } from "@/state";
 
 vi.mock("@/git", () => ({
   getCommitMessages: vi.fn(),
@@ -23,12 +23,10 @@ describe("patterns", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (StateManager as unknown as ReturnType<typeof vi.fn>).mockImplementation(function() {
-      return {
-        read: vi.fn(),
-        save: vi.fn(),
-      };
-    });
+    (StateManager as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => ({
+      read: vi.fn(),
+      save: vi.fn(),
+    }));
     manager = new StateManager("/tmp/test");
   });
 
@@ -36,7 +34,7 @@ describe("patterns", () => {
     it("detects new commit patterns", async () => {
       const state = createDefaultState("test");
       vi.mocked(manager.read).mockResolvedValue(state);
-      
+
       vi.mocked(getCommitMessages).mockReturnValue(["fix bug", "fix bug", "fix bug"]);
       vi.mocked(detectCommitPatterns).mockReturnValue(new Map([["fix bug", 3]]));
 
@@ -45,7 +43,7 @@ describe("patterns", () => {
         directory: "/tmp/test",
         i18n,
       });
-      
+
       expect(newPatterns).toHaveLength(1);
       expect(newPatterns[0].type).toBe("commit");
       expect(newPatterns[0].description).toBe("fix bug");
@@ -65,7 +63,7 @@ describe("patterns", () => {
         examples: [],
       });
       vi.mocked(manager.read).mockResolvedValue(state);
-      
+
       vi.mocked(getCommitMessages).mockReturnValue(["fix bug"]);
       vi.mocked(detectCommitPatterns).mockReturnValue(new Map([["fix bug", 3]]));
 
@@ -81,7 +79,7 @@ describe("patterns", () => {
       const state = createDefaultState("test");
       state.statistics.filesModified = { "src/main.ts": 5 };
       vi.mocked(manager.read).mockResolvedValue(state);
-      
+
       vi.mocked(detectCommitPatterns).mockReturnValue(new Map());
 
       const newPatterns = await detectPatterns({
@@ -89,7 +87,7 @@ describe("patterns", () => {
         directory: "/tmp/test",
         i18n,
       });
-      
+
       expect(newPatterns).toHaveLength(1);
       expect(newPatterns[0].type).toBe("file");
       expect(newPatterns[0].description).toBe("src/main.ts");
@@ -149,7 +147,7 @@ describe("patterns", () => {
           lastSeen: 0,
           surfaced: false,
           examples: [],
-        }
+        },
       ];
       vi.mocked(manager.read).mockResolvedValue(state);
 

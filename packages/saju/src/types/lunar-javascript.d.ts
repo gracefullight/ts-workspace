@@ -79,6 +79,7 @@ declare module "lunar-javascript" {
     toFullString(): string;
   }
 
+  // biome-ignore lint/complexity/noStaticOnlyClass: External library type definition
   export class HolidayUtil {
     static fix(data: Record<string, string> | null): void;
   }

@@ -76,8 +76,6 @@ p {
 }
 
 .coffee-button img {
-  height: 60px !important;
-  width: 217px !important;
   transition: transform 0.2s;
 }
 

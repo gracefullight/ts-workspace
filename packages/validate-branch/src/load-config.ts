@@ -29,17 +29,13 @@ export async function loadConfig(): Promise<Config | null> {
       if (file.endsWith(".ts") || file.endsWith(".mts") || file.endsWith(".mjs")) {
         const fileUrl = pathToFileURL(configPath);
         fileUrl.searchParams.set("ts", Date.now().toString());
-        const { default: config } = await import(
-          /* @vite-ignore */ fileUrl.href
-        );
+        const { default: config } = await import(/* @vite-ignore */ fileUrl.href);
         return config as Config;
       }
 
       if (file.endsWith(".js") || file.endsWith(".cjs")) {
         const fileUrl = pathToFileURL(configPath);
-        const { default: config } = await import(
-          /* @vite-ignore */ fileUrl.href
-        );
+        const { default: config } = await import(/* @vite-ignore */ fileUrl.href);
         return config as Config;
       }
     } catch (error) {

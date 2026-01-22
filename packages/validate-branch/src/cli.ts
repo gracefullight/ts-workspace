@@ -2,7 +2,8 @@
 
 import chalk from "chalk";
 import { Command, Option } from "commander";
-import { type Config, loadConfig } from "@/load-config";
+import { loadConfig } from "@/load-config";
+
 import { getCurrentBranchName, validateWithDetails } from "@/validate-branch-name";
 
 const SUCCESS_CODE = 0;

@@ -22,11 +22,8 @@ export function analyzeTimeSinceLastSession(lastSession: string | null): Session
   return "long-break";
 }
 
-export function formatJourney(
-  ctx: MimicContext,
-  state: State,
-  gitHistory: string[],
-): string {
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex narrative formatting for Mimic's journey display
+export function formatJourney(ctx: MimicContext, state: State, gitHistory: string[]): string {
   const milestones = state.journey.milestones.slice(-10);
   const observations = state.journey.observations.slice(-5);
   const locale = ctx.i18n.language === "ko-KR" ? ko : enUS;

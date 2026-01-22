@@ -230,6 +230,7 @@ export interface StrengthResult {
   description: string;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex domain algorithm for traditional Chinese four-pillars strength assessment
 export function analyzeStrength(
   yearPillar: string,
   monthPillar: string,

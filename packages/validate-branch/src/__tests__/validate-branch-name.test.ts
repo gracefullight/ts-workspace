@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   getCurrentBranchName,
   validateBranchName,
@@ -170,7 +170,7 @@ describe("validateBranchName", () => {
 
   describe("edge cases", () => {
     it("should handle very long branch names", () => {
-      const longName = "feature/" + "a".repeat(200);
+      const longName = `feature/${"a".repeat(200)}`;
       expect(validateBranchName(longName)).toBe(true);
     });
 
@@ -356,10 +356,10 @@ describe("validateWithDetails", () => {
 });
 
 describe("getCurrentBranchName", () => {
-  let originalCwd: string;
+  let _originalCwd: string;
 
   beforeEach(() => {
-    originalCwd = process.cwd();
+    _originalCwd = process.cwd();
   });
 
   it("should return current branch name in git repository", async () => {

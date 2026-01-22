@@ -193,6 +193,7 @@ function getJohuAdjustment(
   return null;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex domain algorithm for traditional Chinese four-pillars yongshen (favorable element) analysis
 export function analyzeYongShen(
   yearPillar: string,
   monthPillar: string,
