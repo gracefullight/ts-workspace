@@ -6,6 +6,7 @@
   "include-component-in-tag": true,
   "include-v-in-tag": false,
   "tag-separator": "@",
+  "pull-request-title-pattern": "chore: release ${component}",
   "packages": {
     "packages/saju": {
       "release-type": "node",
