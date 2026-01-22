@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/gracefullight/pkgs/compare/@gracefullight/ng-daum-address@1.0.0...@gracefullight/ng-daum-address@1.0.1) (2026-01-22)
+
+
+### Bug Fixes
+
+* apply consistent code formatting and update various package configurations and tools across the monorepo ([7783641](https://github.com/gracefullight/pkgs/commit/7783641e0b3a8c9de191441c4f05bb3070af4e69))
+
 ## 1.0.0 (2026-01-16)
 
 

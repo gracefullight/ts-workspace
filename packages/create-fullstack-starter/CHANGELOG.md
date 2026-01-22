@@ -1,5 +1,12 @@
 # create-fullstack-starter
 
+## [0.2.2](https://github.com/gracefullight/pkgs/compare/create-fullstack-starter@0.2.1...create-fullstack-starter@0.2.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* apply consistent code formatting and update various package configurations and tools across the monorepo ([7783641](https://github.com/gracefullight/pkgs/commit/7783641e0b3a8c9de191441c4f05bb3070af4e69))
+
 ## [0.2.1](https://github.com/gracefullight/pkgs/compare/create-fullstack-starter@0.2.0...create-fullstack-starter@0.2.1) (2026-01-14)
 
 

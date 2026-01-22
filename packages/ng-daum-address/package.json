@@ -1,6 +1,6 @@
 {
   "name": "@gracefullight/ng-daum-address",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Angular 21+ Daum Postcode address search component with signal-based API",
   "keywords": [
     "angular",
