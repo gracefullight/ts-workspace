@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { cwd } from "node:process";
+import { pathToFileURL } from "node:url";
 import type { Preset } from "@/validate-branch-name";
 
 export interface Config {
@@ -25,18 +26,20 @@ export async function loadConfig(): Promise<Config | null> {
     try {
       await readFile(configPath, "utf-8");
 
-      if (file.endsWith(".ts") || file.endsWith(".mts")) {
-        const { default: config } = await import(`file://${configPath}?ts=${Date.now()}`);
-        return config as Config;
-      }
-
-      if (file.endsWith(".mjs")) {
-        const { default: config } = await import(`file://${configPath}?ts=${Date.now()}`);
+      if (file.endsWith(".ts") || file.endsWith(".mts") || file.endsWith(".mjs")) {
+        const fileUrl = pathToFileURL(configPath);
+        fileUrl.searchParams.set("ts", Date.now().toString());
+        const { default: config } = await import(
+          /* @vite-ignore */ fileUrl.href
+        );
         return config as Config;
       }
 
       if (file.endsWith(".js") || file.endsWith(".cjs")) {
-        const { default: config } = await import(configPath);
+        const fileUrl = pathToFileURL(configPath);
+        const { default: config } = await import(
+          /* @vite-ignore */ fileUrl.href
+        );
         return config as Config;
       }
     } catch (error) {
