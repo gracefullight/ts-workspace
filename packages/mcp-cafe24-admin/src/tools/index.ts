@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools as registerAppTools } from "@/tools/app.js";
 import { registerTools as registerAppstoreOrderTools } from "@/tools/appstore-order.js";
+import { registerTools as registerAppstorePaymentTools } from "@/tools/appstore-payment.js";
 import { registerArticleIconTools } from "@/tools/article-icon.js";
 import { registerTools as registerAutomessageTools } from "@/tools/automessage.js";
 import { registerTools as registerBenefitTools } from "@/tools/benefit.js";
@@ -9,6 +10,7 @@ import { registerTools as registerBundleProductTools } from "@/tools/bundleprodu
 import { registerTools as registerCancellationTools } from "@/tools/cancellation.js";
 import { registerTools as registerCartTools } from "@/tools/cart.js";
 import { registerTools as registerCashReceiptTools } from "@/tools/cashreceipt.js";
+import { registerTools as registerCategoryDecorationImagesTools } from "@/tools/category-decoration-images.js";
 import { registerTools as registerCategoryProductTools } from "@/tools/categoryproduct.js";
 import { registerTools as registerCategoryPropertyTools } from "@/tools/categoryproperty.js";
 import { registerTools as registerCollectRequestTools } from "@/tools/collect-request.js";
@@ -26,6 +28,7 @@ import { registerTools as registerCustomerPaymentInfoTools } from "@/tools/custo
 import { registerTools as registerCustomerPlusAppTools } from "@/tools/customer-plus-app.js";
 import { registerTools as registerCustomerPropertyTools } from "@/tools/customer-property.js";
 import { registerTools as registerDashboardTools } from "@/tools/dashboard.js";
+import { registerTools as registerDatabridgeLogsTools } from "@/tools/databridge-logs.js";
 import { registerTools as registerDiscountCodeTools } from "@/tools/discount-codes.js";
 import { registerTools as registerDormantTools } from "@/tools/dormant.js";
 import { registerTools as registerExchangeTools } from "@/tools/exchange.js";
@@ -75,12 +78,14 @@ import { registerTools as registerProductSettingTools } from "@/tools/product-se
 import { registerTools as registerProductTagsTools } from "@/tools/product-tags.js";
 import { registerTools as registerProductVariantsTools } from "@/tools/product-variants.js";
 import { registerTools as registerPromotionTools } from "@/tools/promotion.js";
+import { registerTools as registerRecipeTools } from "@/tools/recipe.js";
 import { registerTools as registerRedirectTools } from "@/tools/redirect.js";
 import { registerTools as registerRefundTools } from "@/tools/refund.js";
 import { registerTools as registerRestockTools } from "@/tools/restock.js";
 import { registerTools as registerReturnTools } from "@/tools/return.js";
 import { registerTools as registerReturnRequestTools } from "@/tools/return-request.js";
 import { registerTools as registerSalesTools } from "@/tools/sales.js";
+import { registerTools as registerScripttagsTools } from "@/tools/scripttags.js";
 import { registerTools as registerSeoTools } from "@/tools/seo.js";
 import { registerTools as registerSerialCouponIssueTools } from "@/tools/serialcoupon-issue.js";
 import { registerTools as registerSerialCouponTools } from "@/tools/serialcoupons.js";
@@ -97,6 +102,8 @@ import { registerTools as registerSupplierTools } from "@/tools/supplier.js";
 import { registerTools as registerTaxManagerTools } from "@/tools/taxmanager.js";
 import { registerTools as registerThemeTools } from "@/tools/theme.js";
 import { registerUrgentInquiryTools } from "@/tools/urgent-inquiry.js";
+import { registerTools as registerWebhookLogsTools } from "@/tools/webhook-logs.js";
+import { registerTools as registerWebhookSettingTools } from "@/tools/webhook-setting.js";
 
 /**
  * Register all Cafe24 Admin tools with the MCP server
@@ -104,6 +111,7 @@ import { registerUrgentInquiryTools } from "@/tools/urgent-inquiry.js";
 export function registerAllTools(server: McpServer): void {
   registerAppTools(server);
   registerAppstoreOrderTools(server);
+  registerAppstorePaymentTools(server);
   registerAutomessageTools(server);
   registerBenefitTools(server);
   registerBoardTools(server);
@@ -114,6 +122,7 @@ export function registerAllTools(server: McpServer): void {
   registerOrderDashboardTools(server);
   registerCashReceiptTools(server);
   registerCartTools(server);
+  registerCategoryDecorationImagesTools(server);
   registerCategoryProductTools(server);
   registerCategoryPropertyTools(server);
   registerExchangeTools(server);
@@ -132,6 +141,7 @@ export function registerAllTools(server: McpServer): void {
   registerCustomerPaymentInfoTools(server);
   registerCustomerPlusAppTools(server);
   registerCustomerPropertyTools(server);
+  registerDatabridgeLogsTools(server);
   registerDashboardTools(server);
   registerDiscountCodeTools(server);
   registerDormantTools(server);
@@ -179,11 +189,13 @@ export function registerAllTools(server: McpServer): void {
   registerPromotionTools(server);
   registerRedirectTools(server);
   registerRefundTools(server);
+  registerRecipeTools(server);
   registerReturnTools(server);
   registerReturnRequestTools(server);
   registerRestockTools(server);
   registerSalesTools(server);
   registerSeoTools(server);
+  registerScripttagsTools(server);
   registerSerialCouponTools(server);
   registerShipmentTools(server);
   registerShippingFeeCancellationTools(server);
@@ -200,4 +212,6 @@ export function registerAllTools(server: McpServer): void {
   registerBundleProductTools(server);
   registerArticleIconTools(server);
   registerUrgentInquiryTools(server);
+  registerWebhookLogsTools(server);
+  registerWebhookSettingTools(server);
 }
