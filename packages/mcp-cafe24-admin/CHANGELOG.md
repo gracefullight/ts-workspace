@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.4](https://github.com/gracefullight/pkgs/compare/@gracefullight/mcp-cafe24-admin@0.1.3...@gracefullight/mcp-cafe24-admin@0.1.4) (2026-01-22)
+## [0.2.0](https://github.com/gracefullight/pkgs/compare/@gracefullight/mcp-cafe24-admin@0.1.3...@gracefullight/mcp-cafe24-admin@0.2.0) (2026-01-22)
 
 
 ### Features
