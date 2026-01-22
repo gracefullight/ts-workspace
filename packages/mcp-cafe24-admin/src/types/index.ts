@@ -12,6 +12,7 @@ export * from "@/types/cancellation.js";
 export * from "@/types/cashreceipt.js";
 export * from "@/types/categories.js";
 export * from "@/types/category-decoration-images.js";
+export * from "@/types/category-seo.js";
 export * from "@/types/collect-request.js";
 export * from "@/types/common.js";
 export * from "@/types/common-event.js";

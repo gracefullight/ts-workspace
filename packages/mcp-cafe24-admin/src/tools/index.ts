@@ -11,6 +11,7 @@ import { registerTools as registerCancellationTools } from "@/tools/cancellation
 import { registerTools as registerCartTools } from "@/tools/cart.js";
 import { registerTools as registerCashReceiptTools } from "@/tools/cashreceipt.js";
 import { registerTools as registerCategoryDecorationImagesTools } from "@/tools/category-decoration-images.js";
+import { registerTools as registerCategorySeoTools } from "@/tools/category-seo.js";
 import { registerTools as registerCategoryProductTools } from "@/tools/categoryproduct.js";
 import { registerTools as registerCategoryPropertyTools } from "@/tools/categoryproperty.js";
 import { registerTools as registerCollectRequestTools } from "@/tools/collect-request.js";
@@ -125,6 +126,7 @@ export function registerAllTools(server: McpServer): void {
   registerCategoryDecorationImagesTools(server);
   registerCategoryProductTools(server);
   registerCategoryPropertyTools(server);
+  registerCategorySeoTools(server);
   registerExchangeTools(server);
   registerExchangeRequestTools(server);
   registerFulfillmentTools(server);
