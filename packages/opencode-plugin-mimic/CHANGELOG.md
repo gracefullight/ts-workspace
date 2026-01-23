@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.6](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.5...opencode-plugin-mimic@0.1.6) (2026-01-23)
+
+
+### Features
+
+* **mimic:** ignore all mimic data and trigger release ([aa07057](https://github.com/gracefullight/pkgs/commit/aa07057b34124dfabbab134aa98caa543d0c2166))
+
+
+### Bug Fixes
+
+* **mimic:** fix gitignore pattern match in tests and ensure trailing slash consistency ([1b5dd1c](https://github.com/gracefullight/pkgs/commit/1b5dd1c08c45722f0ba1273e1eab6c04848028af))
+
 ## [0.1.5](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.4...opencode-plugin-mimic@0.1.5) (2026-01-22)
 
 
