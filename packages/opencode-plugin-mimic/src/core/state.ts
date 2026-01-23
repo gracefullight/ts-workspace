@@ -59,7 +59,7 @@ export class StateManager {
     this.projectName = directory.split("/").pop() || "unknown";
   }
 
-  private async ensureGitIgnore(): Promise<void> {
+  async ensureGitIgnore(): Promise<void> {
     const gitIgnorePath = join(this.mimicDir, "..", "..", ".gitignore");
 
     if (!existsSync(gitIgnorePath)) {
