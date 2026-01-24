@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.9...opencode-plugin-mimic@0.1.10) (2026-01-24)
+
+
+### Bug Fixes
+
+* **opencode-plugin-mimic:** split modelId by slash to extract provider and model separately ([ab8fe1a](https://github.com/gracefullight/pkgs/commit/ab8fe1aaac42ef08bb9c376bc563918b4097d987))
+
 ## [0.1.9](https://github.com/gracefullight/pkgs/compare/opencode-plugin-mimic@0.1.8...opencode-plugin-mimic@0.1.9) (2026-01-23)
 
 
