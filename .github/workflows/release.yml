@@ -205,6 +205,7 @@ jobs:
         if: steps.check-zotero.outputs.has_zotero_package == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.version.outputs.tag }}
           files: packages/zotero-plugin-uts/zotero-plugin-uts@*.xpi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
