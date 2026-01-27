@@ -15,6 +15,7 @@
 | [opencode-plugin-mimic](./packages/opencode-plugin-mimic) | 패턴을 학습해 워크플로에 적응하는 OpenCode 플러그인. Mimic은 작업 방식을 관찰하고 세션 간에 기억하며, 반복되는 행동을 기반으로 행동을 제안합니다. | [![npm](https://img.shields.io/npm/v/opencode-plugin-mimic.svg)](https://www.npmjs.org/package/opencode-plugin-mimic) |
 | [create-fullstack-starter](./packages/create-fullstack-starter) | Fullstack Starter 템플릿 CLI | [![npm](https://img.shields.io/npm/v/create-fullstack-starter.svg)](https://www.npmjs.org/package/create-fullstack-starter) |
 | [saju](./packages/saju-dart) | Dart/Flutter 사주명리 계산 라이브러리 | [![pub](https://img.shields.io/pub/v/saju.svg)](https://pub.dev/packages/saju) |
+| [zotero-plugin-uts](./packages/zotero-plugin-uts) | UTS APA 7th 형식으로 참고문헌을 복사하는 Zotero 7/8 플러그인 | - |
 
 ## 데모
 

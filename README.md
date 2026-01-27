@@ -15,6 +15,7 @@
 | [opencode-plugin-mimic](./packages/opencode-plugin-mimic) | An OpenCode plugin that learns from your patterns and adapts to your workflow. Mimic watches how you work, remembers across sessions, and suggests actions based on what you do repeatedly. | [![npm](https://img.shields.io/npm/v/opencode-plugin-mimic.svg)](https://www.npmjs.org/package/opencode-plugin-mimic) |
 | [create-fullstack-starter](./packages/create-fullstack-starter) | Fullstack Starter template CLI | [![npm](https://img.shields.io/npm/v/create-fullstack-starter.svg)](https://www.npmjs.org/package/create-fullstack-starter) |
 | [saju](./packages/saju-dart) | Dart/Flutter Four Pillars (Saju) calculation library | [![pub](https://img.shields.io/pub/v/saju.svg)](https://pub.dev/packages/saju) |
+| [zotero-plugin-uts](./packages/zotero-plugin-uts) | Zotero 7/8 plugin to copy bibliography in UTS APA 7th format | - |
 
 ## Demo
 
