@@ -123,3 +123,88 @@ jobs:
             flutter pub publish --force
             cd -
           done
+
+  publish-zotero:
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for Zotero packages
+        id: check-zotero
+        run: |
+          PATHS='${{ needs.release-please.outputs.paths_released }}'
+          HAS_ZOTERO=$(echo "$PATHS" | jq -r '[.[] | select(. == "packages/zotero-plugin-uts")] | length > 0')
+          echo "has_zotero_package=$HAS_ZOTERO" >> $GITHUB_OUTPUT
+
+      - name: Setup Bun
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Get new version
+        id: version
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        run: |
+          VERSION=$(node -p "require('./packages/zotero-plugin-uts/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=zotero-plugin-uts@$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build .xpi file
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        run: |
+          cd packages/zotero-plugin-uts
+          bun run build:xpi
+
+      - name: Update updates.json
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        run: |
+          VERSION='${{ steps.version.outputs.version }}'
+          TAG='${{ steps.version.outputs.tag }}'
+          UPDATE_FILE='packages/zotero-plugin-uts/updates.json'
+
+          # Update updates.json using jq
+          cat "$UPDATE_FILE" | jq --arg v "$VERSION" --arg t "$TAG" '
+            .addons["uts-copy@gracefullight.dev"].updates |= . + [{
+              "version": $v,
+              "update_link": ("https://github.com/gracefullight/pkgs/releases/download/\($t)/zotero-plugin-uts@\($v).xpi"),
+              "applications": {
+                "zotero": {
+                  "strict_min_version": "7.0",
+                  "strict_max_version": "8.*"
+                }
+              }
+            }]
+          ' > "$UPDATE_FILE.tmp" && mv "$UPDATE_FILE.tmp" "$UPDATE_FILE"
+
+      - name: Commit updates.json
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/zotero-plugin-uts/updates.json
+          git commit -m "chore: update updates.json for ${{ steps.version.outputs.version }}"
+
+      - name: Push updates.json
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+      - name: Upload .xpi to Release
+        if: steps.check-zotero.outputs.has_zotero_package == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packages/zotero-plugin-uts/zotero-plugin-uts@*.xpi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

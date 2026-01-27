@@ -19,7 +19,7 @@ describe("PluginState", () => {
   it("should store context after initialization", () => {
     const context = {
       id: "test-plugin@example.com",
-      version: "1.0.0",
+      version: "0.1.0",
       rootURI: "chrome://test/",
     };
 
@@ -27,14 +27,14 @@ describe("PluginState", () => {
 
     expect(pluginState.isInitialized()).toBe(true);
     expect(pluginState.pluginID).toBe("test-plugin@example.com");
-    expect(pluginState.version).toBe("1.0.0");
+    expect(pluginState.version).toBe("0.1.0");
     expect(pluginState.rootURI).toBe("chrome://test/");
   });
 
   it("should reset to initial state", () => {
     pluginState.initialize({
       id: "test@example.com",
-      version: "1.0.0",
+      version: "0.1.0",
       rootURI: "chrome://test/",
     });
 

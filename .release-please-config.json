@@ -39,6 +39,10 @@
     "packages/opencode-plugin-mimic": {
       "release-type": "node",
       "component": "opencode-plugin-mimic"
+    },
+    "packages/zotero-plugin-uts": {
+      "release-type": "node",
+      "component": "zotero-plugin-uts"
     }
   }
 }
