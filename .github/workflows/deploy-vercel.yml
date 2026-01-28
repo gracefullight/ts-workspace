@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/mcp-cafe24-admin-example/**"
+      - "packages/mcp-cafe24-admin/**"
       - ".github/workflows/deploy-vercel.yml"
 
 concurrency:
