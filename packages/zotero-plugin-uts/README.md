@@ -17,8 +17,8 @@ A Zotero plugin that copies bibliography in UTS APA 7th format to clipboard.
 ## Installation
 
 1. Download the latest `.xpi` file from [Releases](https://github.com/gracefullight/pkgs/releases?q=zotero-plugin-uts&expanded=true)
-2. In Zotero, go to Tools → Add-ons
-3. Click the gear icon → Install Add-on From File
+2. In Zotero, go to Tools → Plugins
+3. Click the gear icon (Settings) → Install Plugin From File
 
    ![Install Plugin From File](docs/install-plugin-from-file.png)
 
