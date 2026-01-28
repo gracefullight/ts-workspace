@@ -126,7 +126,7 @@ export function registerPreferencePane(rootURI: string): void {
   }
 }
 
-export function onPrefsEvent(type: string, data: { window: Window }): void {
+export function onPrefsEvent(type: string, _data: { window: Window }): void {
   switch (type) {
     case "load":
       Zotero.debug("UTS Citation: Preferences loaded");

@@ -12,6 +12,7 @@ interface ZoteroPluginUTSModule {
 
 declare const ZoteroPluginUTS: ZoteroPluginUTSModule | undefined;
 
+// biome-ignore lint/suspicious/noShadowRestrictedNames: Zotero plugin bootstrap requires globalThis assignments
 declare const globalThis: {
   install: () => void;
   startup: (context: PluginContext) => Promise<void>;
