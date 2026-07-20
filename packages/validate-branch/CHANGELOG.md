@@ -1,5 +1,12 @@
 # @gracefullight/validate-branch
 
+## [1.1.4](https://github.com/gracefullight/pkgs/compare/@gracefullight/validate-branch@1.1.3...@gracefullight/validate-branch@1.1.4) (2026-07-20)
+
+
+### Bug Fixes
+
+* **validate-branch:** resolve current branch inside git worktrees ([c950db5](https://github.com/gracefullight/pkgs/commit/c950db5a2bac46b7c1c6fb3335a7e4dcd9f73d6f))
+
 ## [1.1.3](https://github.com/gracefullight/pkgs/compare/@gracefullight/validate-branch@1.1.2...@gracefullight/validate-branch@1.1.3) (2026-03-25)
 
 
