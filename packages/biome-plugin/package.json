@@ -13,6 +13,7 @@
   },
   "keywords": [
     "biome",
+    "biome-plugin",
     "plugin",
     "gritql",
     "linter",
