@@ -48,6 +48,11 @@
     "packages/markdown": {
       "release-type": "node",
       "component": "@gracefullight/markdown"
+    },
+    "packages/modelscope-image-mcp": {
+      "release-type": "node",
+      "component": "@gracefullight/modelscope-image-mcp",
+      "extra-files": ["src/version.ts"]
     }
   }
 }
