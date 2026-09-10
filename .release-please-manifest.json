@@ -9,5 +9,5 @@
   "packages/react-share": "0.1.5",
   "packages/tems-trp-parser": "0.1.2",
   "packages/markdown": "0.1.8",
-  "packages/modelscope-image-mcp": "0.1.0"
+  "packages/modelscope-image-mcp": "0.1.1"
 }
